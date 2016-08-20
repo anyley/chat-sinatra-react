@@ -1,5 +1,5 @@
-#chat-client
-[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)](https://raw.githubusercontent.com/anyley/chat-client/master/LICENSE) [![Build Status](https://travis-ci.org/anyley/chat-client.svg?branch=master)](https://travis-ci.org/anyley/chat-client)
+#chat-sinatra-react
+[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)](https://raw.githubusercontent.com/anyley/chat-sinatra-react/master/LICENSE) [![Build Status](https://travis-ci.org/anyley/chat-sinatra-react.svg?branch=master)](https://travis-ci.org/anyley/chat-sinatra-react)
 
 ###ТЗ: Разработать простой пример многопользовательского чата
 
@@ -18,4 +18,3 @@
 чтобы вы максимально смогли проявить свою фантазию,
 как в плане выбора инструментов, так и в плане идей
 и умение правильно додумывать вещи.
-# chat-client
