@@ -1,6 +1,4 @@
-require './backend/server'
-require './backend/chat_backend'
+require './backend/chat_server'
 
-use ChatDemo::ChatBackend
-
-run ChatDemo::Server
+use ChatServer::Chat
+run ChatServer::WebServer

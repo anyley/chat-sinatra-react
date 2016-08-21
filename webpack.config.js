@@ -55,8 +55,10 @@ module.exports = {
             LANG: "'ru'"
         }),
         new HtmlWebpackPlugin({
-            title: 'Development mode',
-            template: 'index.ejs'
+            title:    'Development mode',
+            template: './index.html',
+            filename: 'index.html',
+            favicon:  'assets/images/favicon.ico'
         })
     ]
 };
