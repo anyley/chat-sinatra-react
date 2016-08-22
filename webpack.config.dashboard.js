@@ -17,7 +17,8 @@ module.exports = {
     context: __dirname + '/frontend/src',
 
     entry: {
-        client: "./client"
+        client: "./client",
+        login: "./login"
     },
 
     output: {

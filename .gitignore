@@ -6,3 +6,4 @@ public
 log
 *.log
 Gemfile.lock
+.bundle

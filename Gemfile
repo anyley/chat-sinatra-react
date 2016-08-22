@@ -1,8 +1,11 @@
 source "https://rubygems.org"
-
-ruby "2.3.1"
+gem "sinatra"
 
 gem "faye-websocket"
-gem "sinatra"
 gem "puma"
 gem "redis"
+gem "shotgun"
+gem "slim"
+gem "foreman"
+gem 'actionview'
+gem 'dotenv'

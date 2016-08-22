@@ -1,4 +1,11 @@
-require './backend/chat_server'
+require './backend/server'
+require './backend/redirector'
+require 'sinatra'
 
-use ChatServer::Chat
-run ChatServer::WebServer
+require 'dotenv'
+Dotenv.load
+
+enable :logging
+
+use Chat::Server
+run Chat::Redirector.new

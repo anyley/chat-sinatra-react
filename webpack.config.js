@@ -14,7 +14,8 @@ module.exports = {
     context: __dirname + '/frontend/src',
 
     entry: {
-        client: "./client"
+        //client: "./client",
+        app: "./app.jsx"
     },
 
     output: {
@@ -31,8 +32,6 @@ module.exports = {
 
     devServer: {
         contentBase: __dirname + '/public',
-        quiet: false,
-        historyApiFallback: true,
     },
 
     module: {
@@ -54,12 +53,22 @@ module.exports = {
             NODE_ENV: JSON.stringify(NODE_ENV),
             LANG: "'ru'"
         }),
+
+        //new HtmlWebpackPlugin({
+        //    title: 'Chat (production mode)',
+        //    template: './index.ejs',
+        //    filename: 'index.html',
+        //    favicon: 'assets/images/favicon.ico',
+        //    chunks: [ 'client' ]
+        //}),
+
         new HtmlWebpackPlugin({
-            title:    'Development mode',
-            template: './index.html',
+            title: 'Login',
+            template: './index.ejs',
             filename: 'index.html',
-            favicon:  'assets/images/favicon.ico'
-        })
+            favicon: 'assets/images/favicon.ico',
+            //chunks: [ 'login' ]
+        }),
     ]
 };
 

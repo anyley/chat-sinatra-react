@@ -10,7 +10,8 @@ module.exports = {
     context: __dirname + '/frontend/src',
 
     entry: {
-        client: "./client"
+        //client: "./client",
+        app: "./app.jsx"
     },
 
     output: {
@@ -24,7 +25,7 @@ module.exports = {
     module: {
         loaders: [
             {
-                test: /\.js$/,
+                test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
                 loader: 'babel',
                 query: {
@@ -47,16 +48,25 @@ module.exports = {
 
         new webpack.NoErrorsPlugin(),
 
+        //new HtmlWebpackPlugin({
+        //    title: 'Chat (production mode)',
+        //    template: './index.ejs',
+        //    filename: 'index.html',
+        //    favicon: 'assets/images/favicon.ico',
+        //    chunks: [ 'client' ]
+        //}),
+
         new HtmlWebpackPlugin({
-            title: 'Production mode',
-            template: './index.html',
+            title: 'Login',
+            template: './index.ejs',
             filename: 'index.html',
-            favicon: 'assets/images/favicon.ico'
+            favicon: 'assets/images/favicon.ico',
+            chunks: [ 'login' ]
         }),
 
         new webpack.optimize.UglifyJsPlugin({
             compress: {
-//                drop_console: true,
+                drop_console: true,
                 warnings:     false,
                 unsafe:       true
             }
