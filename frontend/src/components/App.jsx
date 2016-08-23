@@ -9,11 +9,18 @@ const mapStateToProps = (state, props) => ({
 });
 
 
-const App = ({}) => {
-    return (
-        <div>
-            <h1> Hello </h1>
-        </div>)
+
+
+@connect(mapStateToProps)
+export default class App extends React.Component {
+    render() {
+        return (
+            <div>
+                <h1> Hello !</h1>
+            </div>
+        )
+    }
+
 };
 
-export default connect(mapStateToProps)(App);
+//export default connect(mapStateToProps)(App);

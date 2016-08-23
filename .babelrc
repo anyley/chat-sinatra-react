@@ -1,8 +1,8 @@
 {
   "presets": [ "es2015", "react" ],
-  "optional": ["es7.decorators", "es7.classProperties", "es7.objectRestSpread"],
   "plugins": [
     "transform-runtime",
-    "transform-object-rest-spread"
+    "transform-object-rest-spread",
+    "transform-decorators-legacy"
   ]
 }

@@ -9,72 +9,36 @@ require './backend/plugins/json_traverse'
 require './backend/plugins/sanitize'
 require './backend/plugins/href_maker'
 
+require './backend/local_queue'
+require './backend/redis_queue'
+require './backend/protocol'
+
 
 module Chat
   KEEPALIVE_TIME = 15
-  MAIN_CHANNEL   = "main-chat"
+  DEFAULT_CHAT   = "main"
 
-  # Базовый класс для Server
-  # Реализована публикация данных в очередь
-  # и обработки событий redis для извлечения данных из очереди
-  class RedisQueue
-    def initialize(redirector=nil)
-      @clients      = []
-      uri           = URI.parse(ENV["REDIS_URL"])
-      @redis_writer = Redis.new(host: uri.host, port: uri.port, password: uri.password)
-
-      # Параллельный поток для приема событий редиса
-      Thread.new do
-        @redis_listener = Redis.new(host: uri.host, port: uri.port, password: uri.password)
-        @redis_listener.subscribe(MAIN_CHANNEL) do |on|
-          # вытаскиваем из очереди redis сообщения и рассылаем клиентам
-          on.message do |channel, msg|
-            puts "Channel: #{channel}, #{msg}"
-            broadcast(msg)
-            # @clients.each { |ws| ws.send(msg) }
-          end
-        end
-      end
-    end
-
-    def publish(data, channel=nil)
-      puts 'Redis publish method'
-      @redis_writer.publish(channel, data)
-    end
-  end
-
-
-  # Базовый класс для Server
-  # Локальная реализация рассылки сообщений
-  # без очередей, без redis, rabbitmq и прочих
-  class LocalQueue
-    def initialize(redirector)
-    end
-
-    # Как только сообщение поступает от клиента
-    # оно сразу же бродкастится всем остальным
-    # подключенным к этому же серверу
-    def publish(data, channel=nil)
-      puts 'Default publish method'
-      p JSON.parse(data)
-      broadcast(data)
-    end
-  end
-
-
-  class Server < LocalQueue
+  # Предки класса Server должны иметь метод publish
+  # для помещения сообщений в очередь для рассылки через broadcast
+  # В данном коде два валидных предка RedisQueue и LocalQueue
+  class Server
+    # include Chat::Protocol
 
     def initialize(redirector)
-      super(redirector)
+      # super(redirector)
       @redirector = redirector
-      @clients    = []
+      @clients    = {}
+      @queue      = RedisQueue.new(self)
     end
 
     def broadcast(msg)
-      @clients.each { |ws| ws.send(msg) }
+      @clients.each do |client, info|
+        client.send(JSON.generate(msg)) if info[:channels].include? msg['channel']
+      end
     end
 
     def call(env)
+      puts 'Server call'
       # проверка поступления WebSocket-запроса
       if Faye::WebSocket.websocket?(env)
         # стандартный life-цикл Faye::WebSocket :open, :message, :close
@@ -82,22 +46,17 @@ module Chat
 
         ws.on :open do |event|
           puts 'new connection open'
-          # добавляем нового клиента в список
-          @clients << ws
+          Protocol.dispatch ws, :open
         end
 
         ws.on :message do |event|
           puts 'message received from client'
-          # фильтруем сообщение клиента каскадом плагинов
-          data = event.data # process_data(event.data)
-          # кладем сообщение в очередь редис для рассылки остальным клиентам
-          publish(data, MAIN_CHANNEL)
+          Protocol.dispatch ws, :message, event.data
         end
 
         ws.on :close do |event|
           puts 'connection closed'
-          # при разрыве соединения удаляем клиента из списка
-          @clients.delete(ws)
+          Protocol.dispatch ws, :close
           ws = nil
         end
 
@@ -127,34 +86,5 @@ module Chat
         # на выходе из json-плагина hash преобразовывается обратно в строку
       end
     end
-
-  end
-
-  module Protocol
-    class Unknown < Exception; end
-    class BadMessageType < Exception; end
-    class BadCommand < Exception; end
-
-    def dispatch(message)
-      raise Protocol::Unknown if message.nil? || message.empty?
-      raise Protocol::Unknown unless message.has_key?('cmd') && message.has_key?('data')
-
-      message = JSON.parse(message)
-
-      case message['cmd']
-        when 'username'
-        when 'get_user_list'
-        when 'get_log'
-        when 'send'
-        when 'delete'
-        when 'change'
-          
-        else
-          raise Protocol::BadMessageType
-      end
-
-    end
-    end
-
   end
 end

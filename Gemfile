@@ -9,3 +9,4 @@ gem "slim"
 gem "foreman"
 gem 'actionview'
 gem 'dotenv'
+gem 'rspec'
