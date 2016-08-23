@@ -45,9 +45,9 @@
     # адрес frontend-сервера (webpack-dev-server с HMR, например)
     REACT_URL=http://localhost:8080
 
-###Запуск backend
-
-    foreman start 
+###Тестирование backend
+    
+    rspec
     
 ---
 ###Установка клиента (frontend)
@@ -58,6 +58,11 @@
     
     npm run build
     
-###Запуск клиента
+###Тестирование клиента
+ 
+    npm run test
+    
+###Запуск приложения
 
-    npm run start
+    foreman start 
+    
