@@ -7,7 +7,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-    context: __dirname + '/frontend/src',
+    context: path.join(__dirname, '/frontend/src'),
 
     entry: {
         //client: "./client",
@@ -15,7 +15,7 @@ module.exports = {
     },
 
     output: {
-        path: __dirname + "/public",
+        path: path.join(__dirname, "/public"),
         filename: "[name].[chunkhash:6].js",
         publicPath: "/"
     },
@@ -36,7 +36,7 @@ module.exports = {
             { test: /\.jade$/, loader: 'jade' },
             { test: /\.css$/,  loader: 'style-loader!css-loader' },
             { test: /.*\/fonts\/.*\.(png|jpg|svg|ttf|eot|woff|woff2)$/, loader: 'file?name=/fonts/[sha1:hash:base36:10].[ext]' },
-            { test: /.*\/images\/.*\.(png|jpg|svg|ico)$/, loader: 'file?name=/images/[sha1:hash:base36:10].[ext]' },
+            { test: /.*\/images\/.*\.(png|jpg|svg|ico)$/, loader: 'file?name=/images/[sha1:hash:base36:10].[ext]' }
         ]
     },
 

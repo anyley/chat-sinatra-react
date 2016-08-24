@@ -14,7 +14,7 @@ const NODE_ENV  = process.env.NODE_ENV || 'development';
 
 
 module.exports = {
-    context: __dirname + '/frontend/src',
+    context: path.join(__dirname, '/frontend/src'),
 
     entry: {
         client: "./client",
@@ -22,7 +22,7 @@ module.exports = {
     },
 
     output: {
-        path:       __dirname + "/public",
+        path:       path.join(__dirname, "/public"),
         filename:   "[name].js",
         publicPath: "/"
     },
@@ -34,9 +34,9 @@ module.exports = {
     devtool: 'eval', // 'cheap-inline-module-source-map',
 
     devServer: {
-        contentBase:        __dirname + '/public',
+        contentBase:        path.join(__dirname, '/public'),
         quiet:              true,
-        historyApiFallback: true,
+        historyApiFallback: true
     },
 
     module: {
@@ -44,7 +44,7 @@ module.exports = {
             {
                 test:    /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loaders: ['react-hot', 'babel'],
+                loaders: ['react-hot', 'babel']
             },
             {test: /\.css$/, loader: 'style-loader!css-loader'},
             {
@@ -54,7 +54,7 @@ module.exports = {
             {
                 test:   /.*\/images\/.*\.(png|jpg|svg|ico)$/,
                 loader: 'file?name=/images/[name].[ext]'
-            },
+            }
         ]
     },
 
@@ -73,7 +73,7 @@ module.exports = {
             favicon:  'assets/images/favicon.ico'
         }),
 
-        new DashboardPlugin(dashboard.setData),
+        new DashboardPlugin(dashboard.setData)
     ]
 };
 

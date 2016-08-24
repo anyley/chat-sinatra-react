@@ -17,17 +17,17 @@ ws.onmessage = (response) => {
 
 };
 
-const waitForWebSocket = (socket, callback) => setTimeout(() => {
-    if (socket.readyState == 1) {
-        callback();
-    }
-    else {
-        console.log(socket);
-        waitForWebSocket(socket, callback);
-    }
-
-}, 10);
-
-waitForWebSocket(ws, () => {
-    ws.send(JSON.stringify({command: 'ping', text: 'this url http://ya.ru and this url https://google.com the end'}));
-});
+//const waitForWebSocket = (socket, callback) => setTimeout(() => {
+//    if (socket.readyState === 1) {
+//        callback();
+//    }
+//    else {
+//        console.log(socket);
+//        waitForWebSocket(socket, callback);
+//    }
+//
+//}, 10);
+//
+//waitForWebSocket(ws, () => {
+//    ws.send(JSON.stringify({command: 'ping', text: 'this url http://ya.ru and this url https://google.com the end'}));
+//});

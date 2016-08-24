@@ -11,7 +11,7 @@ const NODE_ENV        = process.env.NODE_ENV || 'development';
 
 
 module.exports = {
-    context: __dirname + '/frontend/src',
+    context: path.join(__dirname, '/frontend/src'),
 
     entry: {
         //client: "./client",
@@ -19,7 +19,7 @@ module.exports = {
     },
 
     output: {
-        path: __dirname + "/public",
+        path: path.join(__dirname, "/public"),
         filename: "[name].js",
         publicPath: "/"
     },
@@ -31,7 +31,7 @@ module.exports = {
     devtool: 'eval', // 'cheap-inline-module-source-map',
 
     devServer: {
-        contentBase: __dirname + '/public',
+        contentBase: path.join(__dirname, '/public')
     },
 
     module: {
@@ -43,7 +43,7 @@ module.exports = {
             },
             { test: /\.css$/,  loader: 'style-loader!css-loader' },
             { test: /.*\/fonts\/.*\.(png|jpg|svg|ttf|eot|woff|woff2)$/, loader: 'file?name=/fonts/[name].[ext]' },
-            { test: /.*\/images\/.*\.(png|jpg|svg|ico)$/, loader: 'file?name=/images/[name].[ext]' },
+            { test: /.*\/images\/.*\.(png|jpg|svg|ico)$/, loader: 'file?name=/images/[name].[ext]' }
         ]
     },
 
@@ -68,7 +68,7 @@ module.exports = {
             filename: 'index.html',
             favicon: 'assets/images/favicon.ico',
             //chunks: [ 'login' ]
-        }),
+        })
     ]
 };
 
