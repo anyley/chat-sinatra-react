@@ -44,7 +44,7 @@ module Chat
         }
     }
 
-    class UnknownEvent < Exception
+    class UnknownAction < Exception
     end
     class Unknown < Exception
     end
@@ -98,19 +98,24 @@ module Chat
     end
 
 
-    # принимает строку в json-формате
-    def self.dispatch(ws, event, message=nil)
+    def self.handleEvent(event, args)
+      p args.keys
+      store = args[:store]
       case event
         when :open
-
+          store[:clients][] = { name: nil }
         when :message
-
+          dispatch JSON.parse(data)
         when :close
-
+          store[:clients].delete ws
         else
-          raise UnknownEvent
+          raise UnknownAction
       end
+    end
 
+
+    # принимает строку в json-формате
+    def self.dispatch(message=nil)
       validate message
 
       # message = JSON.parse message, symbolize_names: true

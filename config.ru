@@ -3,7 +3,7 @@ require './backend/redirector'
 require 'sinatra'
 
 require 'dotenv'
-Dotenv.load
+Dotenv.load './.env'
 
 enable :logging
 

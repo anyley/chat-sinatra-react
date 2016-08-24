@@ -29,6 +29,7 @@ module Chat
       @redirector = redirector
       @clients    = {}
       @queue      = RedisQueue.new(self)
+      @store      = {clients: {}, users: []}
     end
 
     def broadcast(msg)
@@ -46,18 +47,18 @@ module Chat
 
         ws.on :open do |event|
           puts 'new connection open'
-          Protocol.dispatch ws, :open
+          Protocol.handleEvent :open, websocket: ws, store: @store
         end
 
         ws.on :message do |event|
           puts 'message received from client'
-          Protocol.dispatch ws, :message, event.data
+          Protocol.handleEvent :message, websocket: ws, store: @store, data: event.data
         end
 
         ws.on :close do |event|
           puts 'connection closed'
-          Protocol.dispatch ws, :close
-          ws = nil
+          Protocol.handleEvent :close, websocket: ws, store: @store
+          # ws = nil
         end
 
         # FIX: По идее должен возвращать статус 101 - Switching Protocols
