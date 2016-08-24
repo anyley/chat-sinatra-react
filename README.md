@@ -1,5 +1,5 @@
 #chat-sinatra-react
-[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)](https://raw.githubusercontent.com/anyley/chat-sinatra-react/master/LICENSE) [![Build Status](https://travis-ci.org/anyley/chat-sinatra-react.svg?branch=master)](https://travis-ci.org/anyley/chat-sinatra-react)
+[![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)](https://raw.githubusercontent.com/anyley/chat-sinatra-react/master/LICENSE) [![Build Status](https://travis-ci.org/anyley/chat-sinatra-react.svg?branch=master)](https://travis-ci.org/anyley/chat-sinatra-react) [![Code Climate](https://codeclimate.com/github/anyley/chat-sinatra-react/badges/gpa.svg)](https://codeclimate.com/github/anyley/chat-sinatra-react) [![Test Coverage](https://codeclimate.com/github/anyley/chat-sinatra-react/badges/coverage.svg)](https://codeclimate.com/github/anyley/chat-sinatra-react/coverage)
 
 ###ТЗ: Разработать простой пример многопользовательского чата
 
