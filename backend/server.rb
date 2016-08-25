@@ -18,28 +18,44 @@ module Chat
   KEEPALIVE_TIME = 15
   DEFAULT_CHAT   = "main"
 
-  # Предки класса Server должны иметь метод publish
-  # для помещения сообщений в очередь для рассылки через broadcast
-  # В данном коде два валидных предка RedisQueue и LocalQueue
   class Server
+    attr_accessor :store, :protocol, :queue
     # include Chat::Protocol
 
     def initialize(redirector)
-      # super(redirector)
       @redirector = redirector
-      @clients    = {}
       @queue      = RedisQueue.new(self)
-      @store      = {clients: {}, users: []}
+      @store      = { clients: {}, users: {} }
+      @protocol   = Chat::Protocol::Simple.new(self)
     end
 
-    def broadcast(msg)
+
+    def add_client(client, data={})
+      @store[:clients][client] = data
+    end
+
+    def del_client(client)
+      @store[:clients].delete client
+    end
+
+    def each_client_send(&block)
       @clients.each do |client, info|
-        client.send(JSON.generate(msg)) if info[:channels].include? msg['channel']
+        client.send(JSON.generate(msg)) if yield(info)
       end
     end
 
+    def each_client(&block)
+      @store[:clients].each_with_object do |client, clients|
+        yield(client, clients)
+      end
+    end
+
+    def send(client, data)
+      client.send(JSON.generate(data))
+    end
+
+
     def call(env)
-      puts 'Server call'
       # проверка поступления WebSocket-запроса
       if Faye::WebSocket.websocket?(env)
         # стандартный life-цикл Faye::WebSocket :open, :message, :close
@@ -47,18 +63,18 @@ module Chat
 
         ws.on :open do |event|
           puts 'new connection open'
-          Protocol.handleEvent :open, websocket: ws, store: @store
+          @protocol.handle ws, :open, event.data
         end
 
         ws.on :message do |event|
           puts 'message received from client'
-          Protocol.handleEvent :message, websocket: ws, store: @store, data: event.data
+          @protocol.handle ws, :message, event.data
         end
 
         ws.on :close do |event|
           puts 'connection closed'
-          Protocol.handleEvent :close, websocket: ws, store: @store
-          # ws = nil
+          @protocol.handle ws, :close, event.data
+          ws = nil
         end
 
         # FIX: По идее должен возвращать статус 101 - Switching Protocols

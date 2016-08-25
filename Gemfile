@@ -10,3 +10,4 @@ gem "foreman"
 gem 'actionview'
 gem 'dotenv'
 gem 'rspec'
+gem 'factory_girl'
