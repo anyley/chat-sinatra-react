@@ -70,6 +70,6 @@
 
     foreman start 
     
-Далее в браузере заходим по адресу [![http://localhost:5000/]](http://localhost:5000/)
-В development режиме будет сделан редирект на [![http://localhost:8080/]](http://localhost:8080/)
+Далее в браузере заходим по адресу [http://localhost:5000/](http://localhost:5000/)
+В development режиме будет сделан редирект на [http://localhost:8080/](http://localhost:8080/)
 Это сделано для горячей замены кода (hot modules replacement) в React
