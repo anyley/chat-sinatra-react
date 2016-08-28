@@ -95,3 +95,11 @@
 * Отправить приватное сообщение {source: 'client', action: 'private', params: { recipient: 'USER_2', message: 'hello' } }
 * Отключиться от чата можно либо командой {source: 'client', action: 'logout'}, либо закрыв браузер
 * После отключения пользователя сервер оповестит всех клиентов сообщением {"source":"server","action":"del_user","params":{"username":"USERNAME"}}
+
+Отправлять команды серверу из консоли браузера можно так:
+
+    ws.send(JSON.stringify({source: 'client', action: 'login', params: {username: 'Name'}}))
+    ws.send(JSON.stringify({source: 'client', action: 'broadcast', params: {message: 'hi all'}}))
+    ws.send(JSON.stringify({source: 'client', action: 'update' }))
+    ws.send(JSON.stringify({source: 'client', action: 'logout' }))
+
