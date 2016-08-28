@@ -73,3 +73,25 @@
 Далее в браузере заходим по адресу [http://localhost:5000/](http://localhost:5000/)
 В development режиме будет сделан редирект на [http://localhost:8080/](http://localhost:8080/)
 Это сделано для горячей замены кода (hot modules replacement) в React
+
+После запуска backend-а к нему можно для тестирования API подключиться из консоли браузера:
+
+      ws = new WebSocket('ws://localhost:5000/');
+      ws.onmessage = (response) => {
+          console.log(response.data);
+      };
+
+Данная команда создаст websocket и будет отображать сообщения от сервера в консоле.
+Протокол общения с сервером такой:
+
+* Сразу после соединения по websocket, сервер отправит клиенту команду {source: 'server', action: 'hello'}
+* После :hello клиент должен отправить на сервер сообщение {source: 'client', action: 'login', username: '<NAME>'}
+* Если имя занято, сервер пришлет ошибку {"source":"server","action":"error","params":{"message":"Username already used"}}
+* Если имя не занято, сервер пришлет сообщение {source: 'server', action: 'welcome', params: {userlist: [...]}}
+* После успешного логина сервер делает рассылку всем о добавлении нового пользователя {"source":"server","action":"add_user","params":{"username":"USERNAME"}}
+* Получить полный список пользователей с сервера можно командой {source: 'client', action: 'update'}
+* На запрос об апдейте сервер снова пришлет welcome с полным списком пользователей
+* Отправить сообщение всем можно командой {source: 'client', action: 'broadcast', params: {message: 'hi all'}}
+* Отправить приватное сообщение {source: 'client', action: 'private', params: { recipient: 'USER_2', message: 'hello' } }
+* Отключиться от чата можно либо командой {source: 'client', action: 'logout'}, либо закрыв браузер
+* После отключения пользователя сервер оповестит всех клиентов сообщением {"source":"server","action":"del_user","params":{"username":"USERNAME"}}
