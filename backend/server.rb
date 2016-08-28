@@ -21,7 +21,6 @@ module Chat
 
   class Server
     attr_accessor :store, :protocol, :queue
-    # include Chat::Protocol
 
     def initialize(redirector)
       @redirector = redirector
@@ -48,9 +47,9 @@ module Chat
       end
     end
 
-    def broadcast(data)
+    def broadcast(from, data)
       @store[:clients].each_key do |client|
-        client.send(JSON.generate(data))
+        client.send(JSON.generate(data)) if from != client
       end
     end
 
@@ -62,6 +61,10 @@ module Chat
 
     def send(client, data)
       client.send JSON.generate(data)
+    end
+
+    def close(client)
+      client.close
     end
 
     def call(env)

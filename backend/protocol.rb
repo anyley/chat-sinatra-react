@@ -1,4 +1,6 @@
 # coding: utf-8
+require './backend/before_action'
+
 module Chat
   module Protocol
     class UnknownEvent   < Exception; end
@@ -6,28 +8,26 @@ module Chat
     class BadSource      < Exception; end
     class BadAction      < Exception; end
     class BadParameters  < Exception; end
+    class UserNotFound   < Exception; end
+    class BadSocket      < Exception; end
 
     class Simple
       attr_accessor :server, :client, :ws
       
-      class ClientActions
-        def initialize(protocol)
-          @protocol = protocol
-        end
-      end
-      
       class ServerActions
+        extend Utils::Callbacks
+        
         def initialize(protocol)
           @protocol = protocol
         end
+        
+        before_action :check!, :error, :welcome, :add_user, :del_user, :broadcast, :provate
 
-        # hello:     [:client],
-        # welcome:   [:client],
-        # error:     [:client, :message],
-        # add_user:  [:username],
-        # del_user:  [:username],
-        # broadcast: [:timestamp, :username, :message],
-        # private:   [:timestamp, :sender, :recipient, :message]
+        def check!(client, *args)
+          raise BadSocket unless @protocol.ws.store[:clients].has_key? client
+        end
+                                                      
+
         def hello(socket)
           @protocol.dispatch socket, source: :server, action: :hello
         end
@@ -37,7 +37,8 @@ module Chat
         end
         
         def welcome(socket)
-          @protocol.dispatch socket, source: :server, action: :welcome
+          userlist = @protocol.ws.store[:clients].values
+          @protocol.dispatch socket, source: :server, action: :welcome, params: { userlist: userlist }
         end
         
         def add_user(socket, username)
@@ -47,7 +48,30 @@ module Chat
         def del_user(socket, username)
           @protocol.dispatch socket, source: :server, action: :del_user, params: {username: username}
         end
+
+        # broadcast: [:timestamp, :username, :message],
+        def broadcast(socket, message)
+          @protocol.dispatch socket, source: :server,
+                                     action: :broadcast,
+                                     params: { timestamp: Time.now.to_i,
+                                               username:  @protocol.ws.username_by_socket(socket),
+                                               message:   message }
+        end
         
+        # private:   [:timestamp, :sender, :recipient, :message]
+        def private(socket, recipient, message)
+          @protocol.dispatch socket, source: :server,
+                                     action: :private,
+                                     params: { timestamp: Time.now.to_i,
+                                               sender:    @protocol.ws.username_by_socket(socket),
+                                               recipient: recipient,
+                                               message:   message }
+        end
+      end
+
+      def initialize(ws)
+        @ws = ws
+        @server = ServerActions.new self
       end
 
       def server
@@ -56,12 +80,6 @@ module Chat
 
       def client
         @client
-      end
-
-      def initialize(ws)
-        @ws = ws
-        @server = ServerActions.new self
-        @client = ClientActions.new self
       end
 
       # MESSAGE_FORMAT =
@@ -99,11 +117,11 @@ module Chat
           logout:    [],
           update:    [],
           broadcast: [:message],
-          private:   [:username, :message]
+          private:   [:recipient, :message]
         },
         server: {
           hello:     [],
-          welcome:   [],
+          welcome:   [:userlist],
           error:     [:message],
           add_user:  [:username],
           del_user:  [:username],
@@ -158,17 +176,14 @@ module Chat
 
         case event
         when :open
-          # TODO: server.save_socket
-#          @ws.save_client client, { username: nil }
           server.hello client
 
         when :message
           dispatch client, data
 
         when :close
+#          raise UserNotFound unless @ws.store[:clients].has_key? client
           server.del_user client, @ws.username_by_socket(client)
-
-          # TODO: server.delete_socket
           @ws.del_client client
 
         else
@@ -181,20 +196,8 @@ module Chat
       def dispatch(client, data)
         message = validate! data
 
-        # message = JSON.parse message, symbolize_names: true
         case message[:source]
         when :client
-        # let(:login_cmd)     { { source: "client", action: "login",
-        #                         params: { username: "John Doe" } } }
-        # let(:logout_cmd)    { { source: "client", action: "logout",
-        #                         params: {} } }
-        # let(:update_cmd)    { { source: "client", action: "update",
-        #                         params: {} } }
-        # let(:broadcast_cmd) { { source: "client", action: "broadcast",
-        #                         params: { message: "hi all" } } }
-        # let(:private_cmd)   { { source: "client", action: "private",
-        #                         params: { username: "John Doe",
-        #                                   message:  "Hi John!" } } }            case message[:action]
           case message[:action]
           when :login
             username = data[:params][:username]
@@ -205,58 +208,49 @@ module Chat
               server.welcome client
               server.add_user client, username
             end
-          when :logout
-            puts message[:action]
-          when :update
-            puts message[:action]
-          when :broadcast
-            puts message[:action]
-          when :private
-            puts message[:action]
-          end
-        
 
-        # let(:hello_cmd)     { { source: "server", action: "hello",
-        #                         params: { client: nil } } }
-        # let(:welcome_cmd)   { { source: "server", action: "welcome",
-        #                         params: { client: nil } } }
-        # let(:error_cmd)     { { source: "server", action: "error",
-        #                         params: { client:  nil,
-        #                                   message: 'Имя занято' } } }
-        # let(:add_user_cmd)  { { source: "server", action: "add_user",
-        #                         params: { username: "John Doe" } } }
-        # let(:del_user_cmd)  { { source: "server", action: "del_user",
-        #                         params: { username: "John Doe" } } }
-        # let(:broadcast_cmd) { { source: "server", action: "broadcast",
-        #                         params: { timestamp: 1471935709105,
-        #                                   username:  "John Doe",
-        #                                   message:   'My name John Doe' } } }
-        # let(:private_cmd)   { { source: "server", action: "private",
-        #                         params: { timestamp: 1471935709105,
-        #                                   sender:    "John Doe",
-        #                                   recipient: "user_2",
-        #                                   message:   'My name John Doe' } } }          when :server
+          when :logout
+#            raise UserNotFound unless @ws.store[:clients].has_key? client
+            @ws.close client
+
+          when :update
+#            raise UserNotFound unless @ws.store[:clients].has_key? client
+            server.welcome client
+
+          when :broadcast
+#            raise UserNotFound unless @ws.store[:clients].has_key? client
+            server.broadcast client, data[:params][:message]
+
+          when :private
+#            raise UserNotFound unless @ws.store[:clients].has_key? client
+            server.private client, data[:params][:recipient], data[:params][:message]
+          end
+          
         when :server
           case message[:action]
           when :hello
-#            puts message[:action]
             @ws.send client, data
             
           when :welcome
-#            puts message[:action]
             @ws.send client, data
+
           when :error
-#            puts message[:action]
             @ws.send client, data
+
           when :add_user
-          #            puts message[:action]
-            @ws.broadcast data
+            @ws.broadcast client, data
+
           when :del_user
- #           puts message[:action]
+            @ws.broadcast client, data
+
           when :broadcast
-            puts message[:action]
+            @ws.broadcast client, data
+
           when :private
-            puts message[:action]
+            raise UserNotFound unless @ws.store[:clients].has_value? data[:params][:recipient]
+            target_ws = @ws.store[:clients].key data[:params][:recipient]
+            data[:params].delete :recipient
+            @ws.send target_ws, data
           end
         end
       end

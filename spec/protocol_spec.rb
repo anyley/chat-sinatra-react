@@ -6,6 +6,7 @@ require 'rspec'
 require 'json'
 require 'spec_helper'
 require './backend/server'
+require './backend/protocol'
 include Chat
 
 
@@ -32,7 +33,7 @@ describe Chat::Protocol::Simple do
 
   # valid server actions
   let(:hello_action)     { { source: "server", action: "hello" } }
-  let(:welcome_action)   { { source: "server", action: "welcome" } }
+  let(:welcome_action)   { { source: "server", action: "welcome",   params: { userlist: [] } } }
   let(:error_action)     { { source: "server", action: "error",     params: { message: 'Имя занято' } } }
   let(:add_user_action)  { { source: "server", action: "add_user",  params: username_params } }
   let(:del_user_action)  { { source: "server", action: "del_user",  params: username_params } }
@@ -176,9 +177,13 @@ describe Chat::Protocol::Simple do
     end
 
     context 'when event type is :message' do
+      before do
+        server.store[:clients][named_client] = { username: 'user 2' }
+      end
+      
       it 'calls protocol.dispatch method' do
-        expect(protocol).to receive(:dispatch).with(noname_client, {})
-        protocol.handle noname_client, :message
+        expect(protocol).to receive(:dispatch).with(named_client, {})
+        protocol.handle named_client, :message
       end
     end
 
