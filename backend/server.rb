@@ -1,3 +1,4 @@
+# coding: utf-8
 require 'sinatra/base'
 require 'faye/websocket'
 require 'thread'
@@ -29,9 +30,12 @@ module Chat
       @protocol   = Chat::Protocol::Simple.new(self)
     end
 
+    def username_by_socket(ws)
+      @store[:clients][ws]
+    end
 
-    def add_client(client, data={})
-      @store[:clients][client] = data
+    def save_client(client, username)
+      @store[:clients][client] = username
     end
 
     def del_client(client)
@@ -44,6 +48,12 @@ module Chat
       end
     end
 
+    def broadcast(data)
+      @store[:clients].each_key do |client|
+        client.send(JSON.generate(data))
+      end
+    end
+
     def each_client(&block)
       @store[:clients].each_with_object do |client, clients|
         yield(client, clients)
@@ -51,9 +61,8 @@ module Chat
     end
 
     def send(client, data)
-      client.send(JSON.generate(data))
+      client.send JSON.generate(data)
     end
-
 
     def call(env)
       # проверка поступления WebSocket-запроса
@@ -63,17 +72,33 @@ module Chat
 
         ws.on :open do |event|
           puts 'new connection open'
-          @protocol.handle ws, :open, event.data
+          begin
+            @protocol.handle ws, :open
+          rescue Exception => e
+            p e.message
+            send ws, error: e.message
+          end
         end
 
         ws.on :message do |event|
           puts 'message received from client'
-          @protocol.handle ws, :message, event.data
+          begin
+            @protocol.handle ws, :message, event.data
+          rescue Exception => e
+            p e.message
+            send ws, error: e.message
+          end
         end
 
         ws.on :close do |event|
           puts 'connection closed'
-          @protocol.handle ws, :close, event.data
+          begin
+            @protocol.handle ws, :close
+          rescue Exception => e
+            p e.message
+            send ws, error: e.message
+          end
+            
           ws = nil
         end
 

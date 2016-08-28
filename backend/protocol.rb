@@ -1,21 +1,74 @@
+# coding: utf-8
 module Chat
   module Protocol
-    class UnknownAction  < Exception; end
+    class UnknownEvent   < Exception; end
     class Unknown        < Exception; end
     class BadSource      < Exception; end
-    class BadCommand     < Exception; end
+    class BadAction      < Exception; end
     class BadParameters  < Exception; end
 
     class Simple
-      def initialize(server)
-        @server = server
+      attr_accessor :server, :client, :ws
+      
+      class ClientActions
+        def initialize(protocol)
+          @protocol = protocol
+        end
+      end
+      
+      class ServerActions
+        def initialize(protocol)
+          @protocol = protocol
+        end
+
+        # hello:     [:client],
+        # welcome:   [:client],
+        # error:     [:client, :message],
+        # add_user:  [:username],
+        # del_user:  [:username],
+        # broadcast: [:timestamp, :username, :message],
+        # private:   [:timestamp, :sender, :recipient, :message]
+        def hello(socket)
+          @protocol.dispatch socket, source: :server, action: :hello
+        end
+        
+        def error(socket, message)
+          @protocol.dispatch socket, source: :server, action: :error, params: {message: message}
+        end
+        
+        def welcome(socket)
+          @protocol.dispatch socket, source: :server, action: :welcome
+        end
+        
+        def add_user(socket, username)
+          @protocol.dispatch socket, source: :server, action: :add_user, params: {username: username}
+        end
+
+        def del_user(socket, username)
+          @protocol.dispatch socket, source: :server, action: :del_user, params: {username: username}
+        end
+        
+      end
+
+      def server
+        @server
+      end
+
+      def client
+        @client
+      end
+
+      def initialize(ws)
+        @ws = ws
+        @server = ServerActions.new self
+        @client = ClientActions.new self
       end
 
       # MESSAGE_FORMAT =
       #   :src  = :server | :client
-      #   :cmd  = CLIENT_COMMANDS_FORMAT | SERVER_COMMANDS_FORMAT
+      #   :action  = CLIENT_COMMANDS_FORMAT | SERVER_COMMANDS_FORMAT
       #   :data = соответственно по заданным ниже форматам
-      MESSAGE_FORMAT  = [:source, :command, :params]
+      MESSAGE_FORMAT  = [:source, :action]
 
       # Схема взаимодействия по протоколу
       #
@@ -38,29 +91,29 @@ module Chat
       #     [close]
       #     if user exists then :del_user ==>
       #
-      COMMAND_FORMATS = {
-          # source
-          client: {
-              # commands  params
-              login:     [:username],
-              logout:    [],
-              update:    [],
-              broadcast: [:message],
-              private:   [:username, :message]
-          },
-          server: {
-              hello:     [:client],
-              welcome:   [:client],
-              error:     [:client, :message],
-              add_user:  [:username],
-              del_user:  [:username],
-              broadcast: [:timestamp, :username, :message],
-              private:   [:timestamp, :sender, :recipient, :message]
-          }
+      ACTIONS_FORMATS = {
+        # source
+        client: {
+          # commands  params
+          login:     [:username],
+          logout:    [],
+          update:    [],
+          broadcast: [:message],
+          private:   [:username, :message]
+        },
+        server: {
+          hello:     [],
+          welcome:   [],
+          error:     [:message],
+          add_user:  [:username],
+          del_user:  [:username],
+          broadcast: [:timestamp, :username, :message],
+          private:   [:timestamp, :sender, :recipient, :message]
+        }
       }
 
 
-      def validate(message)
+      def validate!(message)
         # сообщение н едолжно быть nil
         raise Unknown if message.nil?
 
@@ -72,129 +125,140 @@ module Chat
         message_source = message[:source].to_sym
 
         # сообщение должно быть от валидного источника
-        unless COMMAND_FORMATS.has_key? message_source
+        unless ACTIONS_FORMATS.has_key? message_source
           raise BadSource
         end
 
-        message_command = message[:command].to_sym
-        message_params  = message[:params]
+        message_action = message[:action].to_sym
+        message_params  = message[:params] || {}
 
         # находим список валидных команд для источника сообщения
-        format_commands = COMMAND_FORMATS[message_source]
+        format_actions = ACTIONS_FORMATS[message_source]
         # сообщение должно содержать релевантную команду от источника
-        unless format_commands.has_key? message_command
-          raise BadCommand
+        unless format_actions.has_key? message_action
+          raise BadAction
         end
 
         # находим формат параметров
-        format_params = format_commands[message_command]
+        format_params = format_actions[message_action]
 
         # проверка на наличие обязательных параметров для команды сообщения
         unless format_params == format_params & message_params.keys
           raise BadParameters
         end
 
-        # все ОК
-        true
+        # все Оk
+        {source: message_source, action: message_action, params: message_params}
       end
 
-
+      
       # Первичный обработчик сообщений поступающих через websocket
       def handle(client, event, data = '{}')
         data = JSON.parse(data, symbolize_names: true)
 
         case event
-          when :open
-            @server.add_client client, { username: nil }
+        when :open
+          # TODO: server.save_socket
+#          @ws.save_client client, { username: nil }
+          server.hello client
 
-          when :message
-            dispatch client, data
+        when :message
+          dispatch client, data
 
-          when :close
-            unless @server.store[:clients][client][:username].nil?
-              dispatch client, { source:  :server,
-                                 command: :del_user,
-                                 params:  { username: @server.store[:clients][client][:username] } }
-            end
-            @server.del_client client
-          else
-            raise UnknownAction
+        when :close
+          server.del_user client, @ws.username_by_socket(client)
+
+          # TODO: server.delete_socket
+          @ws.del_client client
+
+        else
+          raise UnknownEvent
         end
       end
 
 
       # принимает строку в json-формате
-      def dispatch(client, message = nil)
-        validate message
+      def dispatch(client, data)
+        message = validate! data
 
         # message = JSON.parse message, symbolize_names: true
-        case message[:src]
-          when :client
-            # let(:login_cmd)     { { source: "client", command: "login",
-            #                         params: { username: "John Doe" } } }
-            # let(:logout_cmd)    { { source: "client", command: "logout",
-            #                         params: {} } }
-            # let(:update_cmd)    { { source: "client", command: "update",
-            #                         params: {} } }
-            # let(:broadcast_cmd) { { source: "client", command: "broadcast",
-            #                         params: { message: "hi all" } } }
-            # let(:private_cmd)   { { source: "client", command: "private",
-            #                         params: { username: "John Doe",
-            #                                   message:  "Hi John!" } } }            case message[:cmd]
+        case message[:source]
+        when :client
+        # let(:login_cmd)     { { source: "client", action: "login",
+        #                         params: { username: "John Doe" } } }
+        # let(:logout_cmd)    { { source: "client", action: "logout",
+        #                         params: {} } }
+        # let(:update_cmd)    { { source: "client", action: "update",
+        #                         params: {} } }
+        # let(:broadcast_cmd) { { source: "client", action: "broadcast",
+        #                         params: { message: "hi all" } } }
+        # let(:private_cmd)   { { source: "client", action: "private",
+        #                         params: { username: "John Doe",
+        #                                   message:  "Hi John!" } } }            case message[:action]
+          case message[:action]
           when :login
-            puts message[:cmd]
+            username = data[:params][:username]
+            if @ws.store[:clients].has_value? username
+              server.error client, 'Username already used'
+            else
+              @ws.save_client client, username
+              server.welcome client
+              server.add_user client, username
+            end
           when :logout
-            puts message[:cmd]
+            puts message[:action]
           when :update
-            puts message[:cmd]
+            puts message[:action]
           when :broadcast
-            puts message[:cmd]
+            puts message[:action]
           when :private
-            puts message[:cmd]
+            puts message[:action]
+          end
+        
 
-        end
-
-        # let(:hello_cmd)     { { source: "server", command: "hello",
+        # let(:hello_cmd)     { { source: "server", action: "hello",
         #                         params: { client: nil } } }
-        # let(:welcome_cmd)   { { source: "server", command: "welcome",
+        # let(:welcome_cmd)   { { source: "server", action: "welcome",
         #                         params: { client: nil } } }
-        # let(:error_cmd)     { { source: "server", command: "error",
+        # let(:error_cmd)     { { source: "server", action: "error",
         #                         params: { client:  nil,
         #                                   message: 'Имя занято' } } }
-        # let(:add_user_cmd)  { { source: "server", command: "add_user",
+        # let(:add_user_cmd)  { { source: "server", action: "add_user",
         #                         params: { username: "John Doe" } } }
-        # let(:del_user_cmd)  { { source: "server", command: "del_user",
+        # let(:del_user_cmd)  { { source: "server", action: "del_user",
         #                         params: { username: "John Doe" } } }
-        # let(:broadcast_cmd) { { source: "server", command: "broadcast",
+        # let(:broadcast_cmd) { { source: "server", action: "broadcast",
         #                         params: { timestamp: 1471935709105,
         #                                   username:  "John Doe",
         #                                   message:   'My name John Doe' } } }
-        # let(:private_cmd)   { { source: "server", command: "private",
+        # let(:private_cmd)   { { source: "server", action: "private",
         #                         params: { timestamp: 1471935709105,
         #                                   sender:    "John Doe",
         #                                   recipient: "user_2",
         #                                   message:   'My name John Doe' } } }          when :server
-        case message[:cmd]
+        when :server
+          case message[:action]
           when :hello
-            puts message[:cmd]
+#            puts message[:action]
+            @ws.send client, data
+            
           when :welcome
-            puts message[:cmd]
+#            puts message[:action]
+            @ws.send client, data
           when :error
-            puts message[:cmd]
+#            puts message[:action]
+            @ws.send client, data
           when :add_user
-            puts message[:cmd]
+          #            puts message[:action]
+            @ws.broadcast data
           when :del_user
-            puts message[:cmd]
+ #           puts message[:action]
           when :broadcast
-            puts message[:cmd]
+            puts message[:action]
           when :private
-            puts message[:cmd]
+            puts message[:action]
+          end
         end
-
-      rescue Protocol::Unknown
-        puts '*** Protocol::Unknown'
-      rescue Protocol::BadCommand
-        puts '*** Protocol::BadCommand'
       end
     end
   end
