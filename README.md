@@ -49,7 +49,7 @@
     
     bundle exec rspec
 
-или режима watch-тестирования
+или для режима watch-тестирования
 
     bundle exec guard
     
@@ -70,6 +70,6 @@
 
     foreman start 
     
-Далее в браузере заходим по адресу http://localhost:5000/
-В development режиме будет сделан редирект на http://localhost:8080/
+Далее в браузере заходим по адресу [![GitHub license]](http://localhost:5000/)
+В development режиме будет сделан редирект на [![GitHub license]](http://localhost:8080/)
 Это сделано для горячей замены кода (hot modules replacement) в React
