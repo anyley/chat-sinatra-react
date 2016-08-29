@@ -1,7 +1,9 @@
 ecmaFeatures:
   modules: true
   jsx: true
-
+  spread: true
+  restParams: true
+  
 env:
   amd: true
   browser: true
@@ -57,7 +59,6 @@ rules:
   no-case-declarations: 2
   no-div-regex: 2
   no-else-return: 0
-  no-empty-label: 2
   no-empty-pattern: 2
   no-eq-null: 2
   no-eval: 2
@@ -211,3 +212,10 @@ rules:
   prefer-spread: 0
   prefer-template: 0
   require-yield: 0
+
+parser:
+  babel-eslint
+
+parserOptions:
+  sourceType: module
+  allowImportExportEverywhere: false

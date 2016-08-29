@@ -7,7 +7,7 @@ import Login from './components/Login.jsx'
 
 export default (
     <Route path="/" component={App}>
-        <Route path="/login" component={Login}>
-        </Route>
+        <Route path="/login" component={Login} />
+        <Route path="/chat" component={Chat} />
     </Route>
 );

@@ -9,8 +9,7 @@ import routes from './routes'
 import * as reducers from './reducers'
 //reducers.routing = routerReducer;
 
-
-
+// (flycheck-set-checker-executable "javascript-eslint" "~/npm/bin/eslint")
 // store
 const store = createStore(
     combineReducers({
@@ -19,6 +18,7 @@ const store = createStore(
     })
 );
 const history = syncHistoryWithStore(browserHistory, store);
+
 
 
 // app renderer

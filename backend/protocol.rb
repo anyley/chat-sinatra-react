@@ -17,16 +17,15 @@ module Chat
       class ServerActions
         extend Utils::Callbacks
         
-        def initialize(protocol)
-          @protocol = protocol
-        end
-        
         before_action :check!, :error, :welcome, :add_user, :del_user, :broadcast, :provate
 
         def check!(client, *args)
           raise BadSocket unless @protocol.ws.store[:clients].has_key? client
         end
-                                                      
+
+        def initialize(protocol)
+          @protocol = protocol
+        end
 
         def hello(socket)
           @protocol.dispatch socket, source: :server, action: :hello
@@ -49,7 +48,6 @@ module Chat
           @protocol.dispatch socket, source: :server, action: :del_user, params: {username: username}
         end
 
-        # broadcast: [:timestamp, :username, :message],
         def broadcast(socket, message)
           @protocol.dispatch socket, source: :server,
                                      action: :broadcast,
@@ -210,19 +208,15 @@ module Chat
             end
 
           when :logout
-#            raise UserNotFound unless @ws.store[:clients].has_key? client
             @ws.close client
 
           when :update
-#            raise UserNotFound unless @ws.store[:clients].has_key? client
             server.welcome client
 
           when :broadcast
-#            raise UserNotFound unless @ws.store[:clients].has_key? client
             server.broadcast client, data[:params][:message]
 
           when :private
-#            raise UserNotFound unless @ws.store[:clients].has_key? client
             server.private client, data[:params][:recipient], data[:params][:message]
           end
           
@@ -238,13 +232,13 @@ module Chat
             @ws.send client, data
 
           when :add_user
-            @ws.broadcast client, data
+            @ws.broadcast client, data, false
 
           when :del_user
-            @ws.broadcast client, data
+            @ws.broadcast client, data, false
 
           when :broadcast
-            @ws.broadcast client, data
+            @ws.broadcast client, data, true
 
           when :private
             raise UserNotFound unless @ws.store[:clients].has_value? data[:params][:recipient]

@@ -47,9 +47,9 @@ module Chat
       end
     end
 
-    def broadcast(from, data)
+    def broadcast(from, data, self_echo=false)
       @store[:clients].each_key do |client|
-        client.send(JSON.generate(data)) if from != client
+        client.send(JSON.generate(data)) if self_echo || from != client
       end
     end
 

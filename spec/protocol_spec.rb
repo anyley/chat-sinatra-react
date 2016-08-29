@@ -77,11 +77,10 @@ describe Chat::Protocol::Simple do
           expect { protocol.validate! bad_source }.to raise_error Protocol::BadSource
         end
       end
-
       context 'when message is valid' do
-        let (:input_message) { { source: "client", action: "login",
+        let(:input_message) { { source: "client", action: "login",
                                  params: { username: "John Doe" } } }
-        let (:output_message) {{ source: :client, action: :login,
+        let(:output_message) {{ source: :client, action: :login,
                                  params: { username: "John Doe" } } }
         it 'converts message values to :sym and return new hash' do
           expect( protocol.validate! input_message ).to be == output_message
@@ -220,6 +219,7 @@ describe Chat::Protocol::Simple do
       protocol.dispatch noname_client, hello_action
     end
 
+    
     context 'when message :source is :server' do
       context 'when action is :hello' do
         it 'call @ws.send method' do
