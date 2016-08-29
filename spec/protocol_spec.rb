@@ -175,14 +175,10 @@ describe Chat::Protocol::Simple do
       end
     end
 
+    # TODO: написать тесты по обработке клиентских сообщений
     context 'when event type is :message' do
       before do
         server.store[:clients][named_client] = { username: 'user 2' }
-      end
-      
-      it 'calls protocol.dispatch method' do
-        expect(protocol).to receive(:dispatch).with(named_client, {})
-        protocol.handle named_client, :message
       end
     end
 

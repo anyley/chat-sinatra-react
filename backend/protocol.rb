@@ -1,5 +1,5 @@
 # coding: utf-8
-require './backend/before_action'
+require './backend/server_actions'
 
 module Chat
   module Protocol
@@ -13,104 +13,23 @@ module Chat
 
     class Simple
       attr_accessor :server, :client, :ws
-      
-      class ServerActions
-        extend Utils::Callbacks
-        
-        before_action :check!, :error, :welcome, :add_user, :del_user, :broadcast, :provate
-
-        def check!(client, *args)
-          raise BadSocket unless @protocol.ws.store[:clients].has_key? client
-        end
-
-        def initialize(protocol)
-          @protocol = protocol
-        end
-
-        def hello(socket)
-          @protocol.dispatch socket, source: :server, action: :hello
-        end
-        
-        def error(socket, message)
-          @protocol.dispatch socket, source: :server, action: :error, params: {message: message}
-        end
-        
-        def welcome(socket)
-          userlist = @protocol.ws.store[:clients].values
-          @protocol.dispatch socket, source: :server, action: :welcome, params: { userlist: userlist }
-        end
-        
-        def add_user(socket, username)
-          @protocol.dispatch socket, source: :server, action: :add_user, params: {username: username}
-        end
-
-        def del_user(socket, username)
-          @protocol.dispatch socket, source: :server, action: :del_user, params: {username: username}
-        end
-
-        def broadcast(socket, message)
-          @protocol.dispatch socket, source: :server,
-                                     action: :broadcast,
-                                     params: { timestamp: Time.now.to_i,
-                                               username:  @protocol.ws.username_by_socket(socket),
-                                               message:   message }
-        end
-        
-        # private:   [:timestamp, :sender, :recipient, :message]
-        def private(socket, recipient, message)
-          @protocol.dispatch socket, source: :server,
-                                     action: :private,
-                                     params: { timestamp: Time.now.to_i,
-                                               sender:    @protocol.ws.username_by_socket(socket),
-                                               recipient: recipient,
-                                               message:   message }
-        end
-      end
 
       def initialize(ws)
         @ws = ws
         @server = ServerActions.new self
+        @message_list = {}
+        @current_message_id = 1
       end
 
       def server
         @server
       end
 
-      def client
-        @client
-      end
-
-      # MESSAGE_FORMAT =
-      #   :src  = :server | :client
-      #   :action  = CLIENT_COMMANDS_FORMAT | SERVER_COMMANDS_FORMAT
-      #   :data = соответственно по заданным ниже форматам
       MESSAGE_FORMAT  = [:source, :action]
 
-      # Схема взаимодействия по протоколу
-      #
-      #    [open]
-      #    :hello ->
-      #
-      #    [message]
-      # <- :login
-      #    :welcome|:error ->
-      #     if :welcome then :add_user ==>
-      # <- :update
-      #    :user_list ->
-      # <- :broadcast
-      #    :broadcast ==>
-      # <- :private
-      #    :private ->
-      # <- :logout
-      #    :del_user ==>
-      #
-      #     [close]
-      #     if user exists then :del_user ==>
-      #
+      # TODO: добавить в протокол подтверждение прочтения личного сообщения
       ACTIONS_FORMATS = {
-        # source
         client: {
-          # commands  params
           login:     [:username],
           logout:    [],
           update:    [],
@@ -139,15 +58,13 @@ module Chat
         end
 
         message_source = message[:source].to_sym
-
         # сообщение должно быть от валидного источника
         unless ACTIONS_FORMATS.has_key? message_source
           raise BadSource
         end
 
         message_action = message[:action].to_sym
-        message_params  = message[:params] || {}
-
+        message_params = message[:params] || {}
         # находим список валидных команд для источника сообщения
         format_actions = ACTIONS_FORMATS[message_source]
         # сообщение должно содержать релевантную команду от источника
@@ -157,7 +74,6 @@ module Chat
 
         # находим формат параметров
         format_params = format_actions[message_action]
-
         # проверка на наличие обязательных параметров для команды сообщения
         unless format_params == format_params & message_params.keys
           raise BadParameters
@@ -168,7 +84,7 @@ module Chat
       end
 
       
-      # Первичный обработчик сообщений поступающих через websocket
+      # Обработчик сообщений поступающих через websocket
       def handle(client, event, data = '{}')
         data = JSON.parse(data, symbolize_names: true)
 
@@ -177,10 +93,34 @@ module Chat
           server.hello client
 
         when :message
-          dispatch client, data
+          message = validate! data
+          raise BadSource if message[:source] != :client
+
+          case message[:action]
+          when :login
+            username = data[:params][:username]
+            if @ws.store[:clients].has_value? username
+              server.error client, 'Это имя занято'
+            else
+              @ws.save_client client, username
+              server.welcome client
+              server.add_user client, username
+            end
+            
+          when :logout
+            @ws.close client
+            
+          when :update
+            server.welcome client
+            
+          when :broadcast
+            server.broadcast client, data[:params][:message]
+            
+          when :private
+            server.private client, data[:params][:recipient], data[:params][:message]
+          end
 
         when :close
-#          raise UserNotFound unless @ws.store[:clients].has_key? client
           server.del_user client, @ws.username_by_socket(client)
           @ws.del_client client
 
@@ -190,62 +130,31 @@ module Chat
       end
 
 
-      # принимает строку в json-формате
+      # Dispatch server actions
       def dispatch(client, data)
         message = validate! data
+        raise BadSource if message[:source] != :server
 
-        case message[:source]
-        when :client
-          case message[:action]
-          when :login
-            username = data[:params][:username]
-            if @ws.store[:clients].has_value? username
-              server.error client, 'Username already used'
-            else
-              @ws.save_client client, username
-              server.welcome client
-              server.add_user client, username
-            end
-
-          when :logout
-            @ws.close client
-
-          when :update
-            server.welcome client
-
-          when :broadcast
-            server.broadcast client, data[:params][:message]
-
-          when :private
-            server.private client, data[:params][:recipient], data[:params][:message]
-          end
+        case message[:action]
+        when :hello, :welcome, :error
+          @ws.send client, data
           
-        when :server
-          case message[:action]
-          when :hello
-            @ws.send client, data
-            
-          when :welcome
-            @ws.send client, data
+        when :add_user, :del_user
+          @ws.broadcast client, data, false
+          
+        when :broadcast
+          @ws.broadcast client, data, true
+          
+        when :private
+          # Выбросит исключение, если получателя нет в списке пользователей
+          raise UserNotFound unless @ws.store[:clients].has_value? data[:params][:recipient]
 
-          when :error
-            @ws.send client, data
-
-          when :add_user
-            @ws.broadcast client, data, false
-
-          when :del_user
-            @ws.broadcast client, data, false
-
-          when :broadcast
-            @ws.broadcast client, data, true
-
-          when :private
-            raise UserNotFound unless @ws.store[:clients].has_value? data[:params][:recipient]
-            target_ws = @ws.store[:clients].key data[:params][:recipient]
-            data[:params].delete :recipient
-            @ws.send target_ws, data
-          end
+          # Ищем websocket получателя
+          target_ws = @ws.store[:clients].key data[:params][:recipient]
+          # Отправляем приватное сообщение получателю
+          @ws.send target_ws, data
+          # Эхо-подтверждение об успешной отправки
+          @ws.send client, data
         end
       end
     end

@@ -1,25 +1,35 @@
+import 'babel-polyfill'
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { createStore, combineReducers } from 'redux'
 import { Provider } from 'react-redux'
 import { Router, Route, browserHistory } from 'react-router'
 import { syncHistoryWithStore, routerReducer } from 'react-router-redux'
+
 import routes from './routes'
-
 import * as reducers from './reducers'
-//reducers.routing = routerReducer;
+import { loadState, saveState } from './localStore.js'
 
-// (flycheck-set-checker-executable "javascript-eslint" "~/npm/bin/eslint")
+const persistedState = loadState();
+
 // store
 const store = createStore(
-    combineReducers({
-        ...reducers,
-        routing: routerReducer
-    })
+  combineReducers({
+    ...reducers,
+    routing: routerReducer
+  }),
+  persistedState
 );
+
+store.subscribe( () => {
+  saveState({
+    state: store.getState().state
+  });
+});
+
+
 const history = syncHistoryWithStore(browserHistory, store);
-
-
 
 // app renderer
 const run = () => {

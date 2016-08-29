@@ -29,6 +29,12 @@ module Chat
       @protocol   = Chat::Protocol::Simple.new(self)
     end
 
+    # +----------------------------------------+
+    # |                                        | 
+    # | WebSocket Server API methods           |
+    # |                                        |
+    # +----------------------------------------+
+
     def username_by_socket(ws)
       @store[:clients][ws]
     end
@@ -41,21 +47,9 @@ module Chat
       @store[:clients].delete client
     end
 
-    def each_client_send(&block)
-      @clients.each do |client, info|
-        client.send(JSON.generate(msg)) if yield(info)
-      end
-    end
-
     def broadcast(from, data, self_echo=false)
       @store[:clients].each_key do |client|
         client.send(JSON.generate(data)) if self_echo || from != client
-      end
-    end
-
-    def each_client(&block)
-      @store[:clients].each_with_object do |client, clients|
-        yield(client, clients)
       end
     end
 
@@ -67,20 +61,18 @@ module Chat
       client.close
     end
 
+    # +----------------------------------------+
+    # | Основной rack-метод                    | 
+    # +----------------------------------------+
     def call(env)
       # проверка поступления WebSocket-запроса
       if Faye::WebSocket.websocket?(env)
         # стандартный life-цикл Faye::WebSocket :open, :message, :close
         ws = Faye::WebSocket.new(env, nil, { ping: KEEPALIVE_TIME })
 
-        ws.on :open do |event|
+        ws.on :open do
           puts 'new connection open'
-          begin
-            @protocol.handle ws, :open
-          rescue Exception => e
-            p e.message
-            send ws, error: e.message
-          end
+          @protocol.handle ws, :open
         end
 
         ws.on :message do |event|
@@ -93,15 +85,9 @@ module Chat
           end
         end
 
-        ws.on :close do |event|
+        ws.on :close do
           puts 'connection closed'
-          begin
-            @protocol.handle ws, :close
-          rescue Exception => e
-            p e.message
-            send ws, error: e.message
-          end
-            
+          @protocol.handle ws, :close
           ws = nil
         end
 
@@ -111,24 +97,6 @@ module Chat
       else
         # Обрабатываем http запросы
         @redirector.call(env)
-      end
-    end
-
-    private
-    def process_data(message)
-      # json plugin:
-      # преобразовывает строку json в ruby hash
-      # и обходит полное hash дерево выдавая key, value другим плагинам
-      Plugins.json(message) do |val1, key1|
-        # sanitize plugin:
-        # чистит value от HTML тэгов
-        Plugins.sanitize(val1, key1) do |val2, key2|
-          # href plugin:
-          # по заданному ключу, заменяет URL-ы в value
-          # на HTML якоря <a href="$url"> $url </a>
-          Plugins.href_maker(val2, key2, 'text')
-        end
-        # на выходе из json-плагина hash преобразовывается обратно в строку
       end
     end
   end

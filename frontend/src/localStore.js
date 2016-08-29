@@ -1,9 +1,22 @@
 'use strict';
 
-export const get = () => JSON.parse(localStorage.getItem('state')) || undefined;
+export const loadState = () => {
+  try {
+    const serializedState = localStorage.getItem('state');
+    if (serializedState === null)
+      return undefined;
+    return JSON.parse(serializedState);
+  } catch (error) {
+    return undefined;
+  }
+}
 
-export const set = (state, props) => {
-    let toSave = {};
-    props.forEach(p => toSave[p] = state[p]);
-    localStorage.setItem('state', JSON.stringify(toSave));
+
+export const saveState = (state) => {
+  try {
+    const serializedState = JSON.stringify(state)
+    localStorage.setItem('state', serializedState);
+  } catch (error) {
+    // pass
+  }
 }
