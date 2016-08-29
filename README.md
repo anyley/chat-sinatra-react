@@ -88,6 +88,7 @@
 
     {source: 'server', action: 'hello'}
 
+
 * После :hello клиент должен отправить на сервер сообщение:
 
     {source: 'client', action: 'login', username: 'USERNAME'}
