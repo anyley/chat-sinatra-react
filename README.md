@@ -113,6 +113,14 @@ ws.onmessage = (response) => {
 ```json
 {"source": "client", "action": "broadcast", "params": {"message": "hi all"}}
 ```
+* После отправки сообщения, все клиенты (включая отправителя) получат пакет вида:
+```json
+{ "source": "server", "action": "private",
+                      "params": { "timestamp": 1472512730000,
+                                  "sender": "USER_1",
+                                  "message": "Hi All!",
+                                  "uuid": "774f9cd8-9c62-478e-bd47-2e817861bb7a" }
+```
 * Отправить приватное сообщение:
 ```json
 {"source": "client", "action": "private", "params": { "recipient": "USER_2", "message": "hello" } }

@@ -42,7 +42,7 @@ module Chat
           error:     [:message],
           add_user:  [:username],
           del_user:  [:username],
-          broadcast: [:timestamp, :username, :message],
+          broadcast: [:timestamp, :sender, :message],
           private:   [:timestamp, :sender, :recipient, :message]
         }
       }

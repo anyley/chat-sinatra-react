@@ -21,14 +21,14 @@ describe Chat::Protocol::Simple do
   let(:named_client)  { CustomWebSocket.new }
   let(:noname_client) { CustomWebSocket.new }
   let(:username_params) { { username: "John Doe" } }
-  let(:srv_broadcast_params) { { timestamp: 1471935709105, username: 'John Doe', message: 'My name John Doe' } }
+  let(:srv_broadcast_params) { { timestamp: 1471935709105, sender: 'John Doe', message: 'My name John Doe' } }
 
   # valid client actions
   let(:login_action)     { { source: "client", action: "login",     params: username_params } }
   let(:logout_action)    { { source: "client", action: "logout" } }
   let(:update_action)    { { source: "client", action: "update" } }
   let(:broadcast_action) { { source: "client", action: "broadcast", params: { message: "hi all" } } }
-  let(:private_action)   { { source: "client", action: "private",   params: { username: "John Doe",
+  let(:private_action)   { { source: "client", action: "private",   params: { sender: "John Doe",
                                                                               message:  "Hi John!" } } }
 
   # valid server actions

@@ -42,7 +42,7 @@ module Chat
           @protocol.dispatch socket, source: :server,
                                      action: :broadcast,
                                      params: { timestamp: timestamp,
-                                               username:  @protocol.ws.username_by_socket(socket),
+                                               sender:    @protocol.ws.username_by_socket(socket),
                                                message:   message,
                                                uuid: SecureRandom.uuid }
         end
