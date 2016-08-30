@@ -119,7 +119,12 @@ ws.onmessage = (response) => {
 ```
 * После отправки приватного сообщения, отправителю и получителю будет направлен одинаковый пакет данных:
 ```json
-{ "source": "server", "action": "private", "params": { "timestamp": 1472512730000, "sender": "USER_1", "recipient": "USER_2", "message": "Hi USER_2", "uuid": "774f9cd8-9c62-478e-bd47-2e817861bb7a" }
+{ "source": "server", "action": "private",
+                      "params": { "timestamp": 1472512730000,
+                                  "sender": "USER_1",
+                                  "recipient": "USER_2",
+                                  "message": "Hi USER_2",
+                                  "uuid": "774f9cd8-9c62-478e-bd47-2e817861bb7a" }
 ```
 * Отключиться от чата можно либо закрыв браузер, либо командой:
 ```json
