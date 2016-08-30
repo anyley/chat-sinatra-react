@@ -75,64 +75,64 @@
 Это сделано для горячей замены кода (hot modules replacement) в React
 
 После запуска backend-а к нему можно для тестирования API подключиться из консоли браузера:
-
+```javascript
       ws = new WebSocket('ws://localhost:5000/');
       ws.onmessage = (response) => {
           console.log(response.data);
       };
-
+```
 Данная команда создаст websocket и будет отображать сообщения от сервера в консоле.
 Протокол общения с сервером такой:
 
 * Сразу после соединения по websocket, сервер отправит клиенту команду:
 ```json
-{source: 'server', action: 'hello'}```
-
+{source: 'server', action: 'hello'}
+```
 * После :hello клиент должен отправить на сервер сообщение:
-
+```json
     {source: 'client', action: 'login', username: 'USERNAME'}
-
+```
 * Если имя занято, сервер пришлет ошибку:
-
+```json
     {"source":"server","action":"error","params":{"message":"Username already used"}}
-
+```
 * Если имя не занято, сервер пришлет сообщение:
-
+```json
     {source: 'server', action: 'welcome', params: {userlist: [...]}}
-
+```
 * После успешного логина сервер делает рассылку всем о добавлении нового пользователя:
-
+```json
     {"source":"server","action":"add_user","params":{"username":"USERNAME"}}
-
+```
 * Получить полный список пользователей с сервера можно командой:
-
+```json
     {source: 'client', action: 'update'}
-
+```
 * На запрос об апдейте сервер снова пришлет welcome с полным списком пользователей
 * Отправить сообщение всем можно командой:
-
+```json
     {source: 'client', action: 'broadcast', params: {message: 'hi all'}}
-
+```
 * Отправить приватное сообщение:
-
+```json
     {source: 'client', action: 'private', params: { recipient: 'USER_2', message: 'hello' } }
-
+```
 * После отправки приватного сообщения, отправителю и получителю будет направлен одинаковый пакет данных:
-
+```json
     { source: 'server', action: 'private', params: { timestamp: 1472512730000, sender: "USER_1", recipient: "USER_2", message: "Hi USER_2", uuid: "774f9cd8-9c62-478e-bd47-2e817861bb7a" }
-
+```
 * Отключиться от чата можно либо закрыв браузер, либо командой:
-
+```json
     {source: 'client', action: 'logout'}
-
+```
 * После отключения пользователя сервер оповестит всех клиентов сообщением:
-
+```json
     {"source":"server","action":"del_user","params":{"username":"USERNAME"}}
-
+```
 Отправлять команды серверу из консоли браузера можно так:
-
+```javascript
     ws.send(JSON.stringify({source: 'client', action: 'login', params: {username: 'Name'}}))
     ws.send(JSON.stringify({source: 'client', action: 'broadcast', params: {message: 'hi all'}}))
     ws.send(JSON.stringify({source: 'client', action: 'update' }))
     ws.send(JSON.stringify({source: 'client', action: 'logout' }))
-
+```
