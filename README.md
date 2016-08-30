@@ -89,15 +89,15 @@ ws.onmessage = (response) => {
 ```json
 {"source": "server", "action": "hello"}
 ```
-* После :hello клиент должен отправить на сервер сообщение:
+* После :hello клиент должен отправить на сервер сообщение с указанием username:
 ```json
 {"source": "client", "action": "login", "username": "USERNAME"}
 ```
-* Если имя занято, сервер пришлет ошибку:
+* Если имя занято, сервер пришлет сообщение об ошибке:
 ```json
 {"source":"server","action":"error","params":{"message":"Username already used"}}
 ```
-* Если имя не занято, сервер пришлет сообщение:
+* Если имя не занято, сервер пришлет сообщение типа :welcome и полный список пользователей чата:
 ```json
 {"source": "server", "action": "welcome", "params": {"userlist": ["USER_1", "USER_2"]}}
 ```
@@ -105,7 +105,7 @@ ws.onmessage = (response) => {
 ```json
 {"source":"server","action":"add_user","params":{"username":"USERNAME"}}
 ```
-* Получить полный список пользователей с сервера можно командой:
+* По необходимости можно получить полный список пользователей с сервера командой:
 ```json
 {"source": "client", "action": "update"}
 ```
@@ -139,14 +139,14 @@ ws.onmessage = (response) => {
 ```json
 {"source": "client", "action": "logout"}
 ```
-* После отключения пользователя сервер оповестит всех клиентов сообщением:
+* После отключения пользователя, сервер оповестит об этом всех клиентов сообщением:
 ```json
 {"source":"server","action":"del_user","params":{"username":"USERNAME"}}
 ```
 Отправлять команды серверу из консоли браузера можно так:
 ```javascript
-ws.send(JSON.stringify({source: "client", action: "login", params: {username: "Name"}}))
-ws.send(JSON.stringify({source: "client", action: "broadcast", params: {message: "hi all"}}))
-ws.send(JSON.stringify({source: "client", action: "update" }))
-ws.send(JSON.stringify({source: "client", action: "logout" }))
+ws.send( JSON.stringify( { source: "client", action: "login", params: { username: "Name" } } ))
+ws.send( JSON.stringify( { source: "client", action: "broadcast", params: { message: "hi all" } } ))
+ws.send( JSON.stringify( { source: "client", action: "update" } ))
+ws.send( JSON.stringify( { source: "client", action: "logout" } ))
 ```
