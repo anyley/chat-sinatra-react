@@ -1,44 +1,61 @@
+'use strict';
+
 import React from 'react'
-import ReactDOM from 'react-dom'
-import { connect } from 'react-redux';
+import { connect } from 'react-redux'
+import { Button, FormGroup, FormControl, Modal } from 'react-bootstrap/dist/react-bootstrap.min.js'
 
-//import { Button } from 'react-bootstrap/dist/react-bootstrap.min.js'
+import '../actions/actions'
 
-
-
-// component
-//class Login extends React.Component {
-//    render() {
-//        return (
-//            <div>
-//                <form ref="form"
-//                      name="login"
-//                      action="http://localhost:5000/login"
-//                      className='form'
-//                      method='post'>
-//                    <label> Name: </label>
-//                    <input type="text" name="username"/>
-//                    <button type='submit'>Login</button>
-//                </form>
-//            </div>
-//        )
-//    }
-//}
-//
-//
-//
-//export default connect()(Login);
-
-const mapStateToProps = (state, props) => ({
-
+const mapStateToProps = ({username}) => ({
+  username
 });
 
 
-const Login = ({}) => {
-    return (
-        <div>
-            <h1> Login </h1>
-        </div>)
-};
+@connect(mapStateToProps)
+export default class Login extends React.Component {
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      text: this.props.text || ''
+    }
+  }
 
-export default connect(mapStateToProps)(Login);
+  handleSubmit(e) {
+    const text = e.target.value.trim()
+    if (e.which === 13) {
+      console.log('<ENTER>');
+      this.setState({ text: '' });
+      /* this.props.onSave(text)
+       * if (this.props.newTodo) {
+       *   this.setState({ text: '' })
+       * }*/
+    }
+  }
+
+  handleChange(e) {
+    this.setState({ text: e.target.value })
+  }
+  
+  render() {
+    const props = this.props;
+
+    return (
+      <Modal.Dialog autoFocus="true">
+        <Modal.Header>
+          <Modal.Title> Вход в чат </Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <FormGroup bsSize="large">
+            <FormControl bsSize="large" type="text" placeholder="Введите имя..."
+                         autoFocus="true"
+                         value={this.state.text}
+                         onChange={this.handleChange.bind(this)}
+                         onKeyDown={this.handleSubmit.bind(this)} />
+          </FormGroup>
+          <Button bsStyle="primary" bsSize="large" block> Войти </Button>
+        </Modal.Body>
+      </Modal.Dialog>
+    )
+  }
+}
