@@ -49,19 +49,19 @@ const handle = (dispatch, action) => {
 
 
 export const ws = (state=null, action) => {
-  if (action.type !== 'connect') return state;
+  if (action.type !== 'connected') return state;
 
   console.log('ws: ', state, action);
-  const _ws = new WebSocket(action.ws_url); //'ws://localhost:5000/');
+//  const _ws = new WebSocket(action.ws_url); //'ws://localhost:5000/');
 
-  _ws.onmessage = (response) => {
-    const data = JSON.parse(response.data);
-    data.type = data.action;
-    console.log(data);
-    handle(data);
-  };
-
-  return _ws;
+  /* _ws.onmessage = (response) => {
+   *   const data = JSON.parse(response.data);
+   *   data.type = data.action;
+   *   console.log(data);
+   *   handle(data);
+   * };
+   */
+  return action.ws;
 }
 
 
@@ -74,7 +74,7 @@ export const userlist = (state=[], action) => {
     switch(action.type) {
         case 'action_1':
             return [...state, action.data];
-
+ 
         default:
             return state;
     }

@@ -8,3 +8,7 @@ export const connect = () => ({
   type: 'connect',
   ws_url: 'ws://localhost:5000/'
 });
+
+const receive = (message) => ({
+  type: 'RECEIVE', message
+})

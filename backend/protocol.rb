@@ -85,12 +85,12 @@ module Chat
 
       
       # Обработчик сообщений поступающих через websocket
-      def handle(client, event, data = '{}')
+      def handle(wsh, event, data = '{}')
         data = JSON.parse(data, symbolize_names: true)
 
         case event
         when :open
-          server.hello client
+          server.hello wsh
 
         when :message
           message = validate! data
@@ -99,31 +99,28 @@ module Chat
           case message[:action]
           when :login
             username = data[:params][:username]
-            if @ws.store[:clients].has_value? username
-              server.error client, 'Это имя занято'
+            if @ws.has_username? username
+              server.error wsh, 'Это имя занято'
             else
-              @ws.save_client client, username
-              server.welcome client
-              server.add_user client, username
+              server.add_user wsh, username
             end
             
           when :logout
-            @ws.close client
+            @ws.close wsh
             
           when :update
-            server.welcome client
+            server.welcome wsh
             
           when :broadcast
-            server.broadcast client, data[:params][:message]
+            server.broadcast wsh, data[:params][:message]
             
           when :private
-            server.private client, data[:params][:recipient], data[:params][:message]
+            server.private wsh, data[:params][:recipient], data[:params][:message]
           end
 
         when :close
-          server.del_user client, @ws.username_by_socket(client)
-          @ws.del_client client
-
+          server.del_user wsh, @ws.username_by_wsh(wsh)
+          @ws.del_client wsh
         else
           raise UnknownEvent
         end
@@ -139,7 +136,12 @@ module Chat
         when :hello, :welcome, :error
           @ws.send client, data
           
-        when :add_user, :del_user
+        when :add_user
+          @ws.add_client client, data[:params][:username]
+          server.welcome client
+          @ws.broadcast client, data, false
+
+        when :del_user
           @ws.broadcast client, data, false
           
         when :broadcast
@@ -147,10 +149,11 @@ module Chat
           
         when :private
           # Выбросит исключение, если получателя нет в списке пользователей
-          raise UserNotFound unless @ws.store[:clients].has_value? data[:params][:recipient]
+          raise UserNotFound unless @ws.has_username? data[:params][:recipient]
 
           # Ищем websocket получателя
-          target_ws = @ws.store[:clients].key data[:params][:recipient]
+          target_ws = @ws.wsh_by_username data[:params][:recipient]
+          p target_ws, data
           # Отправляем приватное сообщение получателю
           @ws.send target_ws, data
           # Эхо-подтверждение об успешной отправки

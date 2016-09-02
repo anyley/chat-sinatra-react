@@ -31,7 +31,8 @@ module Chat
         end
         
         def welcome(socket)
-          userlist = @protocol.ws.store[:clients].values
+          p @protocol.ws.store[:clients]
+          userlist = @protocol.ws.store[:clients].each_value.map { |client| client[:username] }
           @protocol.dispatch socket,
                              source: :server,
                              action: :welcome,
@@ -59,7 +60,7 @@ module Chat
                              source: :server,
                              action: :broadcast,
                              params: { timestamp: timestamp,
-                                       sender:    @protocol.ws.username_by_socket(socket),
+                                       sender:    @protocol.ws.username_by_wsh(socket),
                                        message:   message,
                                        uuid:      SecureRandom.uuid }
         end
@@ -69,7 +70,7 @@ module Chat
                              source: :server,
                              action: :private,
                              params: { timestamp: timestamp,
-                                       sender:    @protocol.ws.username_by_socket(socket),
+                                       sender:    @protocol.ws.username_by_wsh(socket),
                                        recipient: recipient,
                                        message:   message,
                                        uuid:      SecureRandom.uuid }

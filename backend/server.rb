@@ -25,7 +25,7 @@ module Chat
     def initialize(redirector)
       @redirector = redirector
       @queue      = RedisQueue.new(self)
-      @store      = { clients: {}, users: {} }
+      @store      = { clients: {} }
       @protocol   = Chat::Protocol::Simple.new(self)
     end
 
@@ -35,31 +35,44 @@ module Chat
     # |                                        |
     # +----------------------------------------+
 
-    def username_by_socket(ws)
-      @store[:clients][ws]
+    def has_username? username
+      !@store[:clients].detect { |k,v| v[:username] == username }.nil?
+    end
+    
+    def wsh_by_username username
+      @store[:clients].detect { |k,v| v[:username] == username }[0]
+    end
+    
+    def socket_by_wsh(wsh)
+      @store[:clients][wsh][:ws]
+    end
+    
+    def username_by_wsh(wsh)
+      @store[:clients][wsh][:username]
     end
 
-    def save_client(client, username)
-      @store[:clients][client] = username
+    def add_client(wsh, username)
+      @store[:clients][wsh][:username] = username
     end
 
-    def del_client(client)
-      @store[:clients].delete client
+    def del_client(wsh)
+      @store[:clients].delete wsh
     end
 
     def broadcast(from, data, self_echo=false)
-      @store[:clients].each_key do |client|
-        client.send(JSON.generate(data)) if self_echo || from != client
+      @store[:clients].each do |wsh, client|
+        send(wsh, data) if (self_echo || from != client[:username]) && client[:username]
       end
     end
 
-    def send(client, data)
-      client.send JSON.generate(data)
+    def send(wsh, data)
+      socket_by_wsh(wsh).send JSON.generate(data)
     end
 
-    def close(client)
-      client.close
+    def close(wsh)
+      socket_by_wsh(wsh).close
     end
+
 
     # +----------------------------------------+
     # | Основной rack-метод                    | 
@@ -72,23 +85,36 @@ module Chat
 
         ws.on :open do
           puts 'new connection open'
-          @protocol.handle ws, :open
+          begin
+            @store[:clients][ws.hash] = {ws: ws, username: nil}
+            @protocol.handle ws.hash, :open
+          rescue Exception => e
+            puts e
+            puts e.backtrace
+          end
         end
 
         ws.on :message do |event|
           puts 'message received from client'
           begin
-            @protocol.handle ws, :message, event.data
+            @protocol.handle ws.hash, :message, event.data
           rescue Exception => e
-            p e.message
-            send ws, error: e.message
+            puts e
+            puts e.backtrace
+            send ws.hash, error: e.message
           end
         end
 
         ws.on :close do
           puts 'connection closed'
-          @protocol.handle ws, :close
-          ws = nil
+          begin
+            @protocol.handle ws.hash, :close
+            ws = nil
+            p 'closed'
+          rescue Exception => e
+            puts e
+            puts e.backtrace
+          end
         end
 
         # FIX: По идее должен возвращать статус 101 - Switching Protocols
@@ -98,6 +124,9 @@ module Chat
         # Обрабатываем http запросы
         @redirector.call(env)
       end
+    rescue Exception => e
+      puts e
+      puts e.backtrace
     end
   end
 end
