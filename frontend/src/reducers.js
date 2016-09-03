@@ -1,4 +1,6 @@
 'use strict';
+
+import * as Immutable from 'immutable'
 import './localStore'
 import * as Actions from './actions/actions'
 
@@ -27,66 +29,106 @@ import * as Actions from './actions/actions'
  *     ...
  *   ]
  * }
- 
-  {"username":"diver","userlist":[{"id":1,"name":"diver"},{"id":2,"name":"user-2"}],"messages":[{"id":1,"type":1,"status":1,"timestamp":1472532070835,"sender":"user-1","text":"text message!"},{"id":2,"type":2,"status":2,"timestamp":1472532070835,"sender":"user-2","text":"hi all..."},{"id":3,"type":1,"status":3,"timestamp":1472532070835,"sender":"user-3","text":"and ypu!"}]}}}
+   
+   {"username":"diver","userlist":[{"id":1,"name":"diver"},{"id":2,"name":"user-2"}],"messages":[{"id":1,"type":1,"status":1,"timestamp":1472532070835,"sender":"user-1","text":"text message!"},{"id":2,"type":2,"status":2,"timestamp":1472532070835,"sender":"user-2","text":"hi all..."},{"id":3,"type":1,"status":3,"timestamp":1472532070835,"sender":"user-3","text":"and ypu!"}]}}}
 
  * */
 
-const handle = (dispatch, action) => {
-  if (action.source !== 'server') {
-    console.log('BAD SOURCE!');
-    return;
+let socket;
+
+
+export const connection_process = (state=false, action) => {
+  if (action.type === 'connect') {
+    return true
   }
-  
-  switch( action.type) {
-    case 'hello':
-      console.log('hello');
-      dispatch(Actions.hello());
-      break;
+
+  if (action.type === 'connected') {
+    return false
+  }    
+
+  return state
+}
+
+
+export const status = (state=false, action) => {
+  if (action.type === 'disconnected') {
+    return false
   }
-  
+
+  if (action.type === 'connected') {
+    return true
+  }    
+
+  return state
 }
 
 
 export const ws = (state=null, action) => {
-  if (action.type !== 'connected') return state;
+  if (action.type === 'connected') {
+    socket = action.ws;
+    return action.ws
+  }
 
-  console.log('ws: ', state, action);
-//  const _ws = new WebSocket(action.ws_url); //'ws://localhost:5000/');
+  if (action.type === 'disconnected') {
+    socket = null
+    
+    return null
+  }
 
-  /* _ws.onmessage = (response) => {
-   *   const data = JSON.parse(response.data);
-   *   data.type = data.action;
-   *   console.log(data);
-   *   handle(data);
-   * };
-   */
-  return action.ws;
+  return state
 }
 
+let user = '';
 
 export const username = (state="", action) => {
-  return state;
+  switch(action.type) {
+    case 'login':
+      user = action.params.username
+      return state
+
+    case 'welcome':
+      return user
+      
+    case 'logout':
+      if (socket)
+        socket.send( JSON.stringify(action) )
+      return ''
+
+    default:
+      return state
+  }
 }
 
 
-export const userlist = (state=[], action) => {
-    switch(action.type) {
-        case 'action_1':
-            return [...state, action.data];
- 
-        default:
-            return state;
-    }
+export const userlist = (state = new Immutable.Set(), action) => {
+  switch(action.type) {
+    case 'add_user':
+        return state.add(action.params.username)
+      
+    case 'del_user':
+        return state.delete(action.params.username)
+      
+    case 'welcome':
+        return new Immutable.Set(action.params.userlist)
+
+    default:
+      return state
+  }
 }
 
 export const messages = (state=[], action) => {
   switch(action.type) {
-    case 'action_1':
-      return [...state, action.data];
+    case 'send_broadcast':
+      if (socket) {
+        socket.send( JSON.stringify(action) )
+      }
+      return state
+
+    case 'broadcast':
+      return [...state, action.params]
 
     default:
-      return state;
+      return state
   }
 }
 

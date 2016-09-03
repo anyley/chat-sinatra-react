@@ -25,7 +25,7 @@ module Chat
         @server
       end
 
-      MESSAGE_FORMAT  = [:source, :action]
+      MESSAGE_FORMAT  = [:source, :type]
 
       # TODO: добавить в протокол подтверждение прочтения личного сообщения
       ACTIONS_FORMATS = {
@@ -33,8 +33,8 @@ module Chat
           login:     [:username],
           logout:    [],
           update:    [],
-          broadcast: [:message],
-          private:   [:recipient, :message]
+          send_broadcast: [:message],
+          send_private:   [:recipient, :message]
         },
         server: {
           hello:     [],
@@ -63,7 +63,7 @@ module Chat
           raise BadSource
         end
 
-        message_action = message[:action].to_sym
+        message_action = message[:type].to_sym
         message_params = message[:params] || {}
         # находим список валидных команд для источника сообщения
         format_actions = ACTIONS_FORMATS[message_source]
@@ -80,7 +80,7 @@ module Chat
         end
 
         # все Оk
-        {source: message_source, action: message_action, params: message_params}
+        {source: message_source, type: message_action, params: message_params}
       end
 
       
@@ -96,7 +96,7 @@ module Chat
           message = validate! data
           raise BadSource if message[:source] != :client
 
-          case message[:action]
+          case message[:type]
           when :login
             username = data[:params][:username]
             if @ws.has_username? username
@@ -111,10 +111,10 @@ module Chat
           when :update
             server.welcome wsh
             
-          when :broadcast
+          when :send_broadcast
             server.broadcast wsh, data[:params][:message]
             
-          when :private
+          when :send_private
             server.private wsh, data[:params][:recipient], data[:params][:message]
           end
 
@@ -132,7 +132,7 @@ module Chat
         message = validate! data
         raise BadSource if message[:source] != :server
 
-        case message[:action]
+        case message[:type]
         when :hello, :welcome, :error
           @ws.send client, data
           
@@ -153,7 +153,6 @@ module Chat
 
           # Ищем websocket получателя
           target_ws = @ws.wsh_by_username data[:params][:recipient]
-          p target_ws, data
           # Отправляем приватное сообщение получателю
           @ws.send target_ws, data
           # Эхо-подтверждение об успешной отправки

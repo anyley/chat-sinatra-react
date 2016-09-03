@@ -27,9 +27,9 @@ const sagaMiddleware = createSagaMiddleware()
  */
 const logger = store => next => action => {
   console.group(action.type)
-  console.info('dispatching', action)
+  console.log('action:', action)
   let result = next(action)
-  console.log('next state', store.getState())
+//  console.log('next state:', store.getState())
   console.groupEnd(action.type)
   return result
 }
@@ -52,10 +52,13 @@ sagaMiddleware.run(rootSaga)
 
 
 store.subscribe( () => {
-  saveState(
-    store.getState()
-  );
-});
+  const currentState = store.getState()
+  saveState( {
+//    username: currentState.username,
+//    userlist: currentState.userlist,
+    messages: currentState.messages
+  })
+})
 
 
 const history = syncHistoryWithStore(browserHistory, store);

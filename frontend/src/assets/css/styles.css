@@ -1,3 +1,4 @@
+
 .modal-dialog {
     top: 50%;
     left: 50%;
@@ -6,4 +7,71 @@
     margin-left: -300px;
     margin-top: -250px;
     position: absolute;
+}
+
+.footer {
+    margin: 0;
+    padding: 5px;
+    background-color: #514e4e;
+    bottom: 0px;
+    color: rgb(85, 84, 89);
+    display: block;
+    font-size: 18px;
+    height: 80px;
+    left: 0px;
+    position: fixed;
+    right: 250px;
+    z-index: 9;
+}
+
+.sidebar {
+    margin: 0;
+    padding: 1em;
+    background-color: #514e4e;
+    bottom: 0;
+    color: rgb(85, 84, 89);
+    display: block;
+    font-size: 18px;
+    position: absolute;
+    right: 0px;
+    top: 36px;
+    width: 250px;
+    background: linear-gradient(to top, #514e4e, #8f8f8f, #8f8f8f);
+}
+
+.header {
+    margin: 0;
+    padding: 1px;
+    left: 0;
+    background-color: #514e4e;
+    background: linear-gradient(to top, #8f8f8f, #8f8f8f);
+    color: rgb(85, 84, 89);
+    display: block;
+    font-family: "Helvetica Neue", Helvetica, "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: 16px;
+    height: 36px;
+    line-height: 16px;
+    position: fixed;
+    width: 100%;
+    z-index: 200;
+}
+
+.main {
+    margin: 0;
+    padding: 20px;
+    font-size: 18px;
+    left: 0px;
+    right: 250px;
+    top: 36px;
+    bottom: 80px;
+    background-color: white;
+    position: fixed;
+    z-index: 999;
+}
+
+.textarea {
+    margin: 0;
+    left: 5px;
+    font-size: 20px;
+    width: 100%;
 }

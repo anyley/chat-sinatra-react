@@ -101,7 +101,7 @@ module Chat
           rescue Exception => e
             puts e
             puts e.backtrace
-            send ws.hash, error: e.message
+            send ws.hash, source: 'server', type: 'error', message: e.message
           end
         end
 
