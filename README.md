@@ -150,3 +150,5 @@ ws.send( JSON.stringify( { source: "client", action: "broadcast", params: { mess
 ws.send( JSON.stringify( { source: "client", action: "update" } ))
 ws.send( JSON.stringify( { source: "client", action: "logout" } ))
 ```
+### Текущий результат
+![Screenshot](https://github.com/anyley/chat-sinatra-react/desktop-animation.gif)
