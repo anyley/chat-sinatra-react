@@ -151,4 +151,4 @@ ws.send( JSON.stringify( { source: "client", action: "update" } ))
 ws.send( JSON.stringify( { source: "client", action: "logout" } ))
 ```
 ### Текущий результат
-![Screenshot](https://github.com/anyley/chat-sinatra-react/desktop-animation.gif)
+![Screenshot](https://github.com/anyley/chat-sinatra-react/blob/master/desktop-animation.gif)
