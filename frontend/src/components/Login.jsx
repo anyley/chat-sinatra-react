@@ -35,7 +35,7 @@ export default class Login extends React.Component {
     this.state = {
       text: this.props.text || '',
     }
-    let iv = null
+    let iv = null, iv2 = null
   }
 
   reconnect() {
@@ -53,7 +53,20 @@ export default class Login extends React.Component {
       console.log(this.iv, this.props.connection_status)
       if (this.props.connection_status == 'disconnected')
         this.reconnect()
-    }, 1000)
+    }, 50)
+
+    
+    /* if (this.props.username) {
+     *   this.iv2 = setInterval(() => {
+     *     console.log(this.iv2, this.props.connection_status)
+     *     if (this.props.connection_status == 'connected') {
+     *       console.log('TRY TO LOGIN')
+     *       this.props.dispatch(Actions.login(this.props.username))
+     *       clearInterval(this.v2)
+     *     }
+     *   }, 500)
+     * }*/
+    
   }
 
   componentWillReceiveProps( nextProps ) {

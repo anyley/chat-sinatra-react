@@ -128,9 +128,9 @@ function* connect() {
       yield cancel(closeTask)
     }
 
-    openTask = yield fork(watchOpen, ws.open)
-    msgTask = yield fork(watchMessages, ws.message)
-    errTask = yield fork(watchErrors, ws.error)
+    openTask  = yield fork(watchOpen, ws.open)
+    msgTask   = yield fork(watchMessages, ws.message)
+    errTask   = yield fork(watchErrors, ws.error)
     closeTask = yield fork(watchClose, ws.close)
   }
 }

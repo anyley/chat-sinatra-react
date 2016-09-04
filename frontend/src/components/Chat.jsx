@@ -83,6 +83,10 @@ export default class Chat extends React.Component {
   logout() {
     this.props.dispatch(Actions.logout())
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    this.refs.main.scrollTop = this.refs.main.scrollHeight - this.refs.main.clientHeight;
+  }
   
   render() {
     const props = this.props
@@ -96,7 +100,7 @@ export default class Chat extends React.Component {
           </div>
         </div>
         <div className="">
-          <div className="main">
+          <div className="main" ref="main">
             <div>
               {props.messages.map( broadcast =>
                 <div key={broadcast.uuid}>

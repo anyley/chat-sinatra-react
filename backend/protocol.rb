@@ -38,7 +38,7 @@ module Chat
         },
         server: {
           hello:     [],
-          welcome:   [:userlist],
+          welcome:   [:userlist, :username],
           error:     [:message],
           add_user:  [:username],
           del_user:  [:username],

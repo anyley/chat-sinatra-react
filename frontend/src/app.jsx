@@ -54,9 +54,10 @@ sagaMiddleware.run(rootSaga)
 store.subscribe( () => {
   const currentState = store.getState()
   saveState( {
-//    username: currentState.username,
+//    auth: currentState.auth,
+    username: currentState.username,
 //    userlist: currentState.userlist,
-    messages: currentState.messages
+//    messages: currentState.messages
   })
 })
 

@@ -8,8 +8,8 @@ import Login from './Login.jsx'
 import Chat from './Chat.jsx'
 
 
-const mapStateToProps = ({username}) => ({
-  username
+const mapStateToProps = ({auth}) => ({
+  auth
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -25,7 +25,7 @@ export default class App extends React.Component {
   }
   
   render() {
-    if (!this.props.username) {
+    if (!this.props.auth) {
       return (
         <Login> {this.props.children} </Login>
       )

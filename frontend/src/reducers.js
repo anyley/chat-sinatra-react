@@ -5,7 +5,7 @@ import './localStore'
 import * as Actions from './actions/actions'
 
 /* {
-     connection_status: 'disconnected', // connecting | connected
+     connection_status: 'disconncted', // connecting | connected
 
  *   username: 'user-1',
  *   
@@ -37,6 +37,19 @@ import * as Actions from './actions/actions'
  * */
 
 let socket;
+
+
+export const auth = (state=false, action) => {
+  switch(action.type) {
+    case 'welcome':
+      return true
+    case 'logout':
+      return false
+
+    default:
+      return state
+  }
+}
 
 
 export const connection_status = (state='disconnected', action) => {
@@ -71,16 +84,11 @@ export const ws = (state=null, action) => {
   return state
 }
 
-let user = '';
 
-export const username = (state="", action) => {
+export const username = (state='', action) => {
   switch(action.type) {
-    case 'login':
-      user = action.params.username
-      return state
-
     case 'welcome':
-      return user
+      return action.params.username
       
     case 'logout':
       if (socket)
@@ -108,6 +116,7 @@ export const userlist = (state = new Immutable.Set(), action) => {
       return state
   }
 }
+
 
 export const messages = (state=[], action) => {
   switch(action.type) {

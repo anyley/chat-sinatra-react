@@ -35,7 +35,8 @@ module Chat
           @protocol.dispatch socket,
                              source: :server,
                              type: :welcome,
-                             params: { userlist: userlist }
+                             params: { userlist: userlist,
+                                       username: @protocol.ws.username_by_wsh(socket) }
         end
         
         def add_user(socket, username)
