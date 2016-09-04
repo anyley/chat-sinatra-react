@@ -5,6 +5,8 @@ import './localStore'
 import * as Actions from './actions/actions'
 
 /* {
+     connection_status: 'disconnected', // connecting | connected
+
  *   username: 'user-1',
  *   
  *   userlist: [
@@ -37,26 +39,17 @@ import * as Actions from './actions/actions'
 let socket;
 
 
-export const connection_process = (state=false, action) => {
-  if (action.type === 'connect') {
-    return true
+export const connection_status = (state='disconnected', action) => {
+  if (action.type === 'disconnected') {
+    return action.type
   }
 
   if (action.type === 'connected') {
-    return false
+    return action.type
   }    
 
-  return state
-}
-
-
-export const status = (state=false, action) => {
-  if (action.type === 'disconnected') {
-    return false
-  }
-
-  if (action.type === 'connected') {
-    return true
+  if (action.type === 'connect') {
+    return 'connecting'
   }    
 
   return state

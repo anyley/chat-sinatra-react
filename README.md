@@ -87,36 +87,36 @@ ws.onmessage = (response) => {
 
 * Сразу после соединения по websocket, сервер отправит клиенту команду:
 ```json
-{"source": "server", "action": "hello"}
+{"source": "server", "type": "hello"}
 ```
 * После :hello клиент должен отправить на сервер сообщение с указанием username:
 ```json
-{"source": "client", "action": "login", "username": "USERNAME"}
+{"source": "client", "type": "login", "username": "USERNAME"}
 ```
 * Если имя занято, сервер пришлет сообщение об ошибке:
 ```json
-{"source":"server","action":"error","params":{"message":"Username already used"}}
+{"source":"server","type":"error","params":{"message":"Username already used"}}
 ```
 * Если имя не занято, сервер пришлет сообщение типа :welcome и полный список пользователей чата:
 ```json
-{"source": "server", "action": "welcome", "params": {"userlist": ["USER_1", "USER_2"]}}
+{"source": "server", "type": "welcome", "params": {"userlist": ["USER_1", "USER_2"]}}
 ```
 * После успешного логина сервер делает рассылку всем о добавлении нового пользователя:
 ```json
-{"source":"server","action":"add_user","params":{"username":"USERNAME"}}
+{"source":"server","type":"add_user","params":{"username":"USERNAME"}}
 ```
 * По необходимости можно получить полный список пользователей с сервера командой:
 ```json
-{"source": "client", "action": "update"}
+{"source": "client", "type": "update"}
 ```
 * На запрос об апдейте сервер снова пришлет welcome с полным списком пользователей
 * Отправить сообщение всем можно командой:
 ```json
-{"source": "client", "action": "broadcast", "params": {"message": "hi all"}}
+{"source": "client", "type": "broadcast", "params": {"message": "hi all"}}
 ```
 * После отправки сообщения, все клиенты (включая отправителя) получат пакет вида:
 ```json
-{ "source": "server", "action": "private",
+{ "source": "server", "type": "private",
                       "params": { "timestamp": 1472512730000,
                                   "sender": "USER_1",
                                   "message": "Hi All!",
@@ -124,11 +124,11 @@ ws.onmessage = (response) => {
 ```
 * Отправить приватное сообщение:
 ```json
-{"source": "client", "action": "private", "params": { "recipient": "USER_2", "message": "hello" } }
+{"source": "client", "type": "private", "params": { "recipient": "USER_2", "message": "hello" } }
 ```
 * После отправки приватного сообщения, отправителю и получителю будет направлен одинаковый пакет данных:
 ```json
-{ "source": "server", "action": "private",
+{ "source": "server", "type": "private",
                       "params": { "timestamp": 1472512730000,
                                   "sender": "USER_1",
                                   "recipient": "USER_2",
@@ -137,18 +137,18 @@ ws.onmessage = (response) => {
 ```
 * Отключиться от чата можно либо закрыв браузер, либо командой:
 ```json
-{"source": "client", "action": "logout"}
+{"source": "client", "type": "logout"}
 ```
 * После отключения пользователя, сервер оповестит об этом всех клиентов сообщением:
 ```json
-{"source":"server","action":"del_user","params":{"username":"USERNAME"}}
+{"source":"server","type":"del_user","params":{"username":"USERNAME"}}
 ```
 Отправлять команды серверу из консоли браузера можно так:
 ```javascript
-ws.send( JSON.stringify( { source: "client", action: "login", params: { username: "Name" } } ))
-ws.send( JSON.stringify( { source: "client", action: "broadcast", params: { message: "hi all" } } ))
-ws.send( JSON.stringify( { source: "client", action: "update" } ))
-ws.send( JSON.stringify( { source: "client", action: "logout" } ))
+ws.send( JSON.stringify( { source: "client", type: "login", params: { username: "Name" } } ))
+ws.send( JSON.stringify( { source: "client", type: "broadcast", params: { message: "hi all" } } ))
+ws.send( JSON.stringify( { source: "client", type: "update" } ))
+ws.send( JSON.stringify( { source: "client", type: "logout" } ))
 ```
 ### Текущий результат
 ![Screenshot](https://github.com/anyley/chat-sinatra-react/blob/master/desktop-animation.gif)

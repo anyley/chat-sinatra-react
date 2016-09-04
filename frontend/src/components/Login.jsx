@@ -7,10 +7,26 @@ import { throttle } from 'lodash'
 
 import * as Actions from '../actions/actions'
 
-const mapStateToProps = ({ws, connection_process, status, username}) => ({
-  ws, connection_process, status, username
-});
 
+// Показывает статус подключеиня в заголовке диалога
+const Status = ({ status }) => {
+  const colors = {
+    'disconnected': 'red',
+    'connecting': 'blue',
+    'connected': 'green'
+  }
+  
+  return (
+    <span className="pull-right" dangerouslySetInnerHTML={{
+      __html: `[<span style="color:${colors[status]}"> ${status} </span>]`
+    }} />
+  )
+}
+
+
+const mapStateToProps = ({ws, connection_status, username}) => ({
+  ws, connection_status, username
+});
 
 @connect(mapStateToProps)
 export default class Login extends React.Component {
@@ -34,8 +50,8 @@ export default class Login extends React.Component {
   componentDidMount() {
 //    console.log(this.props.status);
     this.iv = setInterval(() => {
-      console.log(this.iv, this.props.status, this.props.connection_process);
-      if (!this.props.status && !this.props.connection_process)
+      console.log(this.iv, this.props.connection_status)
+      if (this.props.connection_status == 'disconnected')
         this.reconnect()
     }, 1000)
   }
@@ -44,30 +60,30 @@ export default class Login extends React.Component {
 //    if (!nextProps.status) throttle( this.reconnect(), 1500 )
   }
 
-  handleSubmit(e) {
-    const text = e.target.value.trim()
-    if (e.which === 13) {
-      this.props.dispatch(Actions.login(text))
-      this.setState({ text: '' })
-      /* this.props.onSave(text)
-       * if (this.props.newTodo) {
-       *   this.setState({ text: '' })
-       * }*/
-    }
+  submit() {
+    this.props.dispatch(Actions.login(this.state.text.trim()))
   }
 
   handleChange(e) {
     this.setState({ text: e.target.value })
   }
   
+  handleSubmit(e) {
+    this.handleChange(e)
+    if (e.which === 13) {
+      this.submit()
+    }
+  }
+
   render() {
     const props = this.props;
 
     return (
       <Modal.Dialog autoFocus="true">
         <Modal.Header>
-          <Modal.Title> Вход в чат
-            <span className="pull-right" dangerouslySetInnerHTML={{__html: (this.props.status ? '[<span style="color:green">ONLINE</span>]' : '[<span style="color:red">OFFLINE</span>]') }} />
+          <Modal.Title>
+            Вход в чат
+            <Status status={props.connection_status} />
           </Modal.Title>
         </Modal.Header>
 
@@ -79,7 +95,10 @@ export default class Login extends React.Component {
                          onChange={this.handleChange.bind(this)}
                          onKeyDown={this.handleSubmit.bind(this)} />
           </FormGroup>
-          <Button bsStyle="primary" bsSize="large" block> Войти </Button>
+          <Button bsStyle="primary" bsSize="large" block
+                  onClick={this.submit.bind(this)} >
+            Войти
+          </Button>
         </Modal.Body>
       </Modal.Dialog>
     )
