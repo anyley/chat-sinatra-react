@@ -113,15 +113,26 @@ function* watchMessages(ws) {
 }
 
 
-function* WebSocketListener() {
-  console.log("CONNECT");
-  const { ws_url } = yield take('connect')
-  console.log(ws_url);
-  const ws = yield call(createWebSocket, ws_url)
-  yield fork(watchOpen, ws.open)
-  yield fork(watchMessages, ws.message)
-  yield fork(watchErrors, ws.error)
-  yield fork(watchClose, ws.close)
+function* connect() {
+  let openTask, msgTask, errTask, closeTask
+
+  while( true ) {
+    console.log('CONNECT');
+    const { ws_url } = yield take('connect')
+    const ws = yield call(createWebSocket, ws_url)
+
+    if (openTask) {
+      yield cancel(openTask)
+      yield cancel(msgTask)
+      yield cancel(errTask)
+      yield cancel(closeTask)
+    }
+
+    openTask = yield fork(watchOpen, ws.open)
+    msgTask = yield fork(watchMessages, ws.message)
+    errTask = yield fork(watchErrors, ws.error)
+    closeTask = yield fork(watchClose, ws.close)
+  }
 }
 
 
@@ -134,21 +145,35 @@ const send = (data) => {
 }
 
 function* login() {
-  const login_action = yield take('login')
-  send( login_action )
-}
-
-function* hello() {
-  const hello_action = yield take('hello')
-  const username = yield select(getUsername)
-  if (username) {
-    send( Actions.login(username) )
+  while(true) {
+    const login_action = yield take('login')
+    send( login_action )
   }
 }
 
+function* hello() {
+  while(true) {
+    const hello_action = yield take('hello')
+    const username = yield select(getUsername)
+    if (username) {
+      send( Actions.login(username) )
+    }
+  }
+}
+
+/* function* all() {
+ *   while(true) {
+ *     const action = yield take('*')
+ *     console.log('SNIFFER: ', action);
+ *   }
+ * }
+ * */
+
 function* disconnected() {
-  yield take('disconnected')
-  console.log('disconnected saga');
+  while(true) {
+    yield take('disconnected')
+    console.log('disconnected saga');
+  }
 }
 
 /* function* broadcast() {
@@ -163,9 +188,10 @@ function* disconnected() {
 
 export default function* rootSaga() {
   yield [
-    WebSocketListener(),
-    login(),
+//    all(),
+    connect(),
     hello(),
+    login(),
     disconnected()
 //    broadcast()
   ]
