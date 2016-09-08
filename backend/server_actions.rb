@@ -20,13 +20,13 @@ module Chat
         def hello(socket)
           @protocol.dispatch socket,
                              source: :server,
-                             type: :hello
+                             type:   :hello
         end
         
         def error(socket, message)
           @protocol.dispatch socket,
                              source: :server,
-                             type: :error,
+                             type:   :error,
                              params: { message: message }
         end
         
@@ -34,7 +34,7 @@ module Chat
           userlist = @protocol.ws.store[:clients].each_value.map { |client| client[:username] }.select {|i| !i.nil?}
           @protocol.dispatch socket,
                              source: :server,
-                             type: :welcome,
+                             type:   :welcome,
                              params: { userlist: userlist,
                                        username: @protocol.ws.username_by_wsh(socket) }
         end
@@ -42,7 +42,7 @@ module Chat
         def add_user(socket, username)
           @protocol.dispatch socket,
                              source: :server,
-                             type: :add_user,
+                             type:   :add_user,
                              params: { username: username,
                                        uuid:     SecureRandom.uuid }
         end
@@ -50,7 +50,7 @@ module Chat
         def del_user(socket, username)
           @protocol.dispatch socket,
                              source: :server,
-                             type: :del_user,
+                             type:   :del_user,
                              params: { username: username,
                                        uuid:     SecureRandom.uuid }
         end
@@ -58,17 +58,17 @@ module Chat
         def broadcast(socket, message)
           @protocol.dispatch socket,
                              source: :server,
-                             type: :broadcast,
+                               type: :broadcast,
                              params: { timestamp: timestamp,
-                                       sender:    @protocol.ws.username_by_wsh(socket),
-                                       message:   message,
-                                       uuid:      SecureRandom.uuid }
+                                          sender: @protocol.ws.username_by_wsh(socket),
+                                         message: message,
+                                            uuid: SecureRandom.uuid }
         end
         
         def private(socket, recipient, message)
           @protocol.dispatch socket, 
                              source: :server,
-                             type: :private,
+                             type:   :private,
                              params: { timestamp: timestamp,
                                        sender:    @protocol.ws.username_by_wsh(socket),
                                        recipient: recipient,

@@ -1,6 +1,7 @@
 # coding: utf-8
 require './backend/server_actions'
 
+
 module Chat
   module Protocol
     class UnknownEvent   < Exception; end
@@ -63,24 +64,24 @@ module Chat
           raise BadSource
         end
 
-        message_action = message[:type].to_sym
+        message_type = message[:type].to_sym
         message_params = message[:params] || {}
         # находим список валидных команд для источника сообщения
-        format_actions = ACTIONS_FORMATS[message_source]
+        format_types = ACTIONS_FORMATS[message_source]
         # сообщение должно содержать релевантную команду от источника
-        unless format_actions.has_key? message_action
+        unless format_types.has_key? message_type
           raise BadAction
         end
 
         # находим формат параметров
-        format_params = format_actions[message_action]
+        format_params = format_types[message_type]
         # проверка на наличие обязательных параметров для команды сообщения
         unless format_params == format_params & message_params.keys
           raise BadParameters
         end
 
         # все Оk
-        {source: message_source, type: message_action, params: message_params}
+        {source: message_source, type: message_type, params: message_params}
       end
 
       
@@ -147,7 +148,7 @@ module Chat
         when :broadcast
           @ws.broadcast client, data, true
           
-        when :private
+          when :private
           # Выбросит исключение, если получателя нет в списке пользователей
           raise UserNotFound unless @ws.has_username? data[:params][:recipient]
 
