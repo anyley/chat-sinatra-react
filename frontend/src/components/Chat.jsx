@@ -38,7 +38,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default class Chat extends React.Component {
     constructor(props, context) {
         super(props, context)
-        this.state = {
+        this.state        = {
             text: this.props.text || '',
 
         }
@@ -56,8 +56,8 @@ export default class Chat extends React.Component {
     }
 
 //    componentDidMount() {
-        /* console.log('DID MOUNT', this.props.userlist);*/
-        //this.doUpdate();
+    /* console.log('DID MOUNT', this.props.userlist);*/
+    //this.doUpdate();
 //    this.props.userlist.forEach( user => console.log(user) )
 //    }
 
@@ -97,13 +97,63 @@ export default class Chat extends React.Component {
     }
 
     componentWillUpdate() {
-        let main = this.refs.main
+        let main          = this.refs.main
         this.shouldScroll = main.scrollTop + main.clientHeight === main.scrollHeight
     }
 
+    messages(props) {
+        let result        = []
+        let last_username = ''
+        props.messages.forEach(broadcast => {
+            if (last_username !== broadcast.sender) {
+                result.push(
+                    <div className="user-row">
+                        <div className="time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
+                        <div className="username"> {broadcast.sender} </div>
+                    </div>
+                )
+            }
+            result.push(
+                <div className="message-row">
+                    <div className="cont-time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
+                    <div className="message"> {broadcast.message} </div>
+                </div>
+            )
+            last_username = broadcast.sender
+        })
+        return result
+    }
+
+    //show_time_username(props) {
+    //    return (
+    //        <div>
+    //            <div className="time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
+    //            <div className="username"> {broadcast.sender} </div>
+    //        </div>
+    //    )
+    //}
+    //
+    //show_time_message(props) {
+    //    return (
+    //        <div key={broadcast.uuid}>
+    //            <div className="cont-time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
+    //            <div className="message"> {broadcast.message} </div>
+    //        </div>
+    //    )
+    //}
+
+    show_messages(props) {
+        let last_username = ''
+        let first_row     = true
+        let result        = []
+
+        for (let i of this.messages(props)) {
+            result.push(i)
+        }
+    }
 
     render() {
-        const props = this.props
+        const props    = this.props
         const userlist = props.userlist
 
         return (
@@ -115,13 +165,7 @@ export default class Chat extends React.Component {
                 </div>
                 <div className="">
                     <div className="main" ref="main">
-                        {props.messages.map(broadcast =>
-                            <div key={broadcast.uuid}>
-                                <span> {new Date(broadcast.timestamp).toLocaleTimeString()} </span>
-                                <span> {broadcast.sender} </span> :
-                                <span> {broadcast.message} </span>
-                            </div>
-                        )}
+                        {this.messages(props)}
                     </div>
                     <div className="sidebar">
                         <Panel>

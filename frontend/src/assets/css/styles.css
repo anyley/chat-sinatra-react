@@ -76,3 +76,31 @@
     font-size: 20px;
     width: 100%;
 }
+
+.time {
+    width: 6em;
+    float: left;
+    color: #8f8f8f;
+}
+
+.cont-time {
+    width: 6em;
+    float: left;
+    color: gainsboro;
+}
+
+.username {
+    margin-top: 10px;
+    padding-left: 10px;
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.message {
+    padding-left: 10px;
+    overflow: hidden;
+}
+
+.message-row:hover, .user-row:hover {
+    background-color: #ececec;
+}
