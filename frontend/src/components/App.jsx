@@ -21,7 +21,7 @@ const mapDispatchToProps = (dispatch) => ({
 export default class App extends React.Component {
   
   componentDidMount() {
-//    this.props.dispatch(Actions.connect());
+//   this.props.dispatch(Actions.connect());
   }
   
   render() {

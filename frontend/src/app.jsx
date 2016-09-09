@@ -21,7 +21,6 @@ import { loadState, saveState } from './localStore.js'
 const sagaMiddleware = createSagaMiddleware()
 
 
-
 /**
  * Logs all actions and states after they are dispatched.
  */
