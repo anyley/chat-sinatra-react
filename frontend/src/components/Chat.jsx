@@ -55,16 +55,6 @@ export default class Chat extends React.Component {
         }, 100)
     }
 
-//    componentDidMount() {
-    /* console.log('DID MOUNT', this.props.userlist);*/
-    //this.doUpdate();
-//    this.props.userlist.forEach( user => console.log(user) )
-//    }
-
-    /* componentWillReceiveProps( nextProps ) {
-     *   console.log("nextProps: ", nextProps);
-     * }*/
-
 
     handleSubmit(e) {
         const text = e.target.value.trim()
@@ -75,9 +65,11 @@ export default class Chat extends React.Component {
         }
     }
 
+
     handleChange(e) {
         this.setState({text: e.target.value})
     }
+
 
     getValidationState() {
         const length = this.state.text.length;
@@ -86,9 +78,11 @@ export default class Chat extends React.Component {
         else if (length > 0) return 'error';
     }
 
+
     logout() {
         this.props.dispatch(Actions.logout())
     }
+
 
     componentDidUpdate(prevProps, prevState) {
         if (this.shouldScroll) {
@@ -96,10 +90,26 @@ export default class Chat extends React.Component {
         }
     }
 
+
     componentWillUpdate() {
         let main          = this.refs.main
         this.shouldScroll = main.scrollTop + main.clientHeight === main.scrollHeight
     }
+
+
+    localTimeField(className, timestamp) {
+        return (
+            <div className={className}> {new Date(timestamp).toLocaleTimeString()} </div>
+        )
+    }
+
+
+    pureHtml(className, html) {
+        return (
+            <div className={className} dangerouslySetInnerHTML={{__html: html}} />
+        )
+    }
+
 
     messages(props) {
         let result        = []
@@ -107,16 +117,16 @@ export default class Chat extends React.Component {
         props.messages.forEach(broadcast => {
             if (last_username !== broadcast.sender) {
                 result.push(
-                    <div className="user-row">
-                        <div className="time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
+                    <div className="user-row" key={'_' + broadcast.uuid}>
+                        {this.localTimeField('time', broadcast.timestamp)}
                         <div className="username"> {broadcast.sender} </div>
                     </div>
                 )
             }
             result.push(
-                <div className="message-row">
-                    <div className="cont-time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
-                    <div className="message"> {broadcast.message} </div>
+                <div className="message-row" key={broadcast.uuid}>
+                    {this.localTimeField('cont-time', broadcast.timestamp)}
+                    {this.pureHtml('message', broadcast.message)}
                 </div>
             )
             last_username = broadcast.sender
@@ -124,23 +134,6 @@ export default class Chat extends React.Component {
         return result
     }
 
-    //show_time_username(props) {
-    //    return (
-    //        <div>
-    //            <div className="time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
-    //            <div className="username"> {broadcast.sender} </div>
-    //        </div>
-    //    )
-    //}
-    //
-    //show_time_message(props) {
-    //    return (
-    //        <div key={broadcast.uuid}>
-    //            <div className="cont-time"> {new Date(broadcast.timestamp).toLocaleTimeString()} </div>
-    //            <div className="message"> {broadcast.message} </div>
-    //        </div>
-    //    )
-    //}
 
     show_messages(props) {
         let last_username = ''
@@ -183,6 +176,7 @@ export default class Chat extends React.Component {
                             controlId="formBasicText"
                             validationState={this.getValidationState()}>
                             <FormControl
+                                autoFocus="true"
                                 componentClass="textarea"
                                 className="textarea"
                                 type="text"

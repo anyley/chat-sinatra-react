@@ -1,12 +1,9 @@
 require 'erb'
 
-module ChatServer
-  module Plugins
-    def self.sanitize(val, key=nil, &block)
-      puts "sanitize: #{key}: #{val}"
-      val = ERB::Util.html_escape(val)
-      val = yield(val, key) if block
-      val
+module Chat
+  module Plugin
+    def self.sanitize(string)
+      ERB::Util.html_escape(string)
     end
   end
 end
