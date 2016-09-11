@@ -1,7 +1,7 @@
 import * as Immutable from 'immutable'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {connect} from 'react-redux';
+import {connect} from 'react-redux'
 import {
     Button,
     Panel,
@@ -93,7 +93,7 @@ export default class Chat extends React.Component {
 
     componentWillUpdate() {
         let main          = this.refs.main
-        this.shouldScroll = main.scrollTop + main.clientHeight === main.scrollHeight
+        this.shouldScroll = (main.scrollHeight - (main.scrollTop + main.offsetHeight)) < 5
     }
 
 
