@@ -99,7 +99,7 @@ ws.onmessage = (response) => {
 ```
 * Если имя не занято, сервер пришлет сообщение типа :welcome и полный список пользователей чата:
 ```json
-{"source": "server", "type": "welcome", "params": {"userlist": ["USER_1", "USER_2"]}}
+{"source": "server", "type": "welcome", "params": {"userlist": ["USER_1", "USER_2"], "username": "User-1"}}
 ```
 * После успешного логина сервер делает рассылку всем о добавлении нового пользователя:
 ```json
