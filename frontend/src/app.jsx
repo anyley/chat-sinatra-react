@@ -80,11 +80,3 @@ store.subscribe(run);
 
 // first state render
 run();
-
-/* const ws = new WebSocket('ws://localhost:5000/');
- * 
- * ws.onmessage = (response) => {
- *   const data = JSON.parse(response.data);
- *   console.log(data);
- *   server.handle(data);
- * };*/

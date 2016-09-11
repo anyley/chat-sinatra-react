@@ -53,6 +53,7 @@ export const auth = (state=false, action) => {
 
 
 export const connection_status = (state='disconnected', action) => {
+  console.log('connection_status: ', state, action)
   if (action.type === 'disconnected') {
     return action.type
   }

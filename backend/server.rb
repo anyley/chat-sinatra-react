@@ -2,16 +2,11 @@
 require 'sinatra/base'
 require 'faye/websocket'
 require 'thread'
-require 'redis'
 require 'json'
+# require 'redis'
 
-# Плагины для обработки клиентских сообщений
-require './backend/plugins/json_traverse'
-require './backend/plugins/sanitize'
-require './backend/plugins/href_maker'
-
-require './backend/local_queue'
-require './backend/redis_queue'
+# require './backend/local_queue'
+# require './backend/redis_queue'
 require './backend/protocol'
 
 
@@ -24,7 +19,7 @@ module Chat
 
     def initialize(redirector)
       @redirector = redirector
-      @queue      = RedisQueue.new(self)
+      # @queue      = RedisQueue.new(self)
       @store      = { clients: {} }
       @protocol   = Chat::Protocol::Simple.new(self)
     end
@@ -36,17 +31,17 @@ module Chat
     # +----------------------------------------+
 
     def has_username? username
-      !@store[:clients].detect { |k,v| v[:username] == username }.nil?
+      !@store[:clients].detect { |k, v| v[:username] == username }.nil?
     end
-    
+
     def wsh_by_username username
-      @store[:clients].detect { |k,v| v[:username] == username }[0]
+      @store[:clients].detect { |k, v| v[:username] == username }[0]
     end
-    
+
     def socket_by_wsh(wsh)
       @store[:clients][wsh][:ws]
     end
-    
+
     def username_by_wsh(wsh)
       @store[:clients][wsh][:username]
     end
@@ -86,7 +81,7 @@ module Chat
         ws.on :open do
           puts 'new connection open'
           begin
-            @store[:clients][ws.hash] = {ws: ws, username: nil}
+            @store[:clients][ws.hash] = { ws: ws, username: nil }
             @protocol.handle ws.hash, :open
           rescue Exception => e
             puts e

@@ -54,16 +54,8 @@ module.exports = {
             LANG: "'ru'"
         }),
 
-        //new HtmlWebpackPlugin({
-        //    title: 'Chat (production mode)',
-        //    template: './index.ejs',
-        //    filename: 'index.html',
-        //    favicon: 'assets/images/favicon.ico',
-        //    chunks: [ 'client' ]
-        //}),
-
         new HtmlWebpackPlugin({
-            title: 'Login',
+            title: 'Chat (dev)',
             template: './index.ejs',
             filename: 'index.html',
             favicon: 'assets/images/favicon.ico',

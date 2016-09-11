@@ -5,6 +5,7 @@
 
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path              = require('path');
 
 module.exports = {
     context: path.join(__dirname, '/frontend/src'),
@@ -27,11 +28,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
-                loader: 'babel',
-                query: {
-                    presets: [ 'es2015', 'react' ],
-                    plugins: [ 'transform-runtime' ]
-                }
+                loaders: ['babel'],
             },
             { test: /\.jade$/, loader: 'jade' },
             { test: /\.css$/,  loader: 'style-loader!css-loader' },
@@ -48,20 +45,12 @@ module.exports = {
 
         new webpack.NoErrorsPlugin(),
 
-        //new HtmlWebpackPlugin({
-        //    title: 'Chat (production mode)',
-        //    template: './index.ejs',
-        //    filename: 'index.html',
-        //    favicon: 'assets/images/favicon.ico',
-        //    chunks: [ 'client' ]
-        //}),
-
         new HtmlWebpackPlugin({
-            title: 'Login',
+            title: 'Chat',
             template: './index.ejs',
-            filename: 'index.html',
+            filename: '../backend/views/index.erb',
             favicon: 'assets/images/favicon.ico',
-            chunks: [ 'login' ]
+            chunks: [ 'app' ]
         }),
 
         new webpack.optimize.UglifyJsPlugin({
@@ -69,6 +58,9 @@ module.exports = {
                 drop_console: true,
                 warnings:     false,
                 unsafe:       true
+            },
+            output: {
+                comments:     false
             }
         })
     ]
