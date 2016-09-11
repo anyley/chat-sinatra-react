@@ -9,8 +9,8 @@ Dotenv.load './.env'
 enable :logging
 
 use Chat::Server
-if ENV['RACK_ENV'] == 'production'
+#if ENV['RACK_ENV'] == 'production'
   run Chat::WebServer.new
-else
-  run Chat::Redirector.new
-end
+#else
+#  run Chat::Redirector.new
+#end
