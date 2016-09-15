@@ -151,4 +151,6 @@ ws.send( JSON.stringify( { source: "client", type: "update" } ))
 ws.send( JSON.stringify( { source: "client", type: "logout" } ))
 ```
 ### Текущий результат
+https://dry-sea-39202.herokuapp.com
+
 ![Screenshot](https://github.com/anyley/chat-sinatra-react/blob/master/desktop-animation.gif)

@@ -4,7 +4,7 @@
 export const connect = () => ({
   source: 'client',
   type: 'connect',
-  ws_url: `ws://${location.host}/`
+  ws_url: `wss://${location.host}/`
 });
 
 export const connected = (ws) => ({
