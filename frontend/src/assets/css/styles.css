@@ -78,14 +78,14 @@
 }
 
 .time {
-    width: 6em;
-    float: left;
+    width: 100px;
+    /*float: left;*/
     color: #8f8f8f;
 }
 
 .cont-time {
-    width: 6em;
-    float: left;
+    width: 100px;
+    /*float: left;*/
     color: gainsboro;
 }
 
