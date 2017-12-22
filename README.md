@@ -1,7 +1,7 @@
-#chat-sinatra-react
+# chat-sinatra-react
 [![GitHub license](https://img.shields.io/badge/license-ISC-blue.svg)](https://raw.githubusercontent.com/anyley/chat-sinatra-react/master/LICENSE) [![Build Status](https://travis-ci.org/anyley/chat-sinatra-react.svg?branch=master)](https://travis-ci.org/anyley/chat-sinatra-react) [![Code Climate](https://codeclimate.com/github/anyley/chat-sinatra-react/badges/gpa.svg)](https://codeclimate.com/github/anyley/chat-sinatra-react) [![Test Coverage](https://codeclimate.com/github/anyley/chat-sinatra-react/badges/coverage.svg)](https://codeclimate.com/github/anyley/chat-sinatra-react/coverage)
 
-###ТЗ: Разработать простой пример многопользовательского чата
+### ТЗ: Разработать простой пример многопользовательского чата
 
 * Рекомендуемый стек:
     - Бэкенд на Ruby, хранение в базе данных не требуется,
@@ -20,20 +20,20 @@
     и умение правильно додумывать вещи.
 
 ---
-###О программе
+### О программе
 Программа состоит из двух основных частей:
 - Backend, обрабатывающий запросы браузера по websocket
 - Frontend, клиентское приложение, написанное с применением **React + Redux**,
 выполняющееся в браузере
 
 ---
-###Установка backend
+### Установка backend
 Бэкэнд разработан на **Ruby 2.3.1** + **Sinatra**.
 Для установки необходимо выполнить команду:
 
     bundle install
 
-###Настройка backend
+### Настройка backend
 В файле **.env** указать адреса серверов, например:
 
     # порт backend-сервера
@@ -45,7 +45,7 @@
     # адрес frontend-сервера (webpack-dev-server с HMR, например)
     REACT_URL=http://localhost:8080
 
-###Тестирование backend
+### Тестирование backend
     
     bundle exec rspec
 
@@ -54,7 +54,7 @@
     bundle exec guard
     
 ---
-###Установка клиента (frontend)
+### Установка клиента (frontend)
     
     npm install
 
@@ -62,11 +62,11 @@
     
     npm run build
     
-###Тестирование клиента
+### Тестирование клиента
  
     npm run test
     
-###Запуск приложения
+### Запуск приложения
 
     foreman start 
     
